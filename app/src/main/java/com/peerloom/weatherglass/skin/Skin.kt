@@ -104,7 +104,31 @@ object Skins {
         font = Font.MONO, corner = 0, upperLabels = true,
     )
 
-    val all = listOf(mono, paper, pixel, retro, kurosawa, anime, ukiyoe, ink, crt, vapor, lcd, teletext)
+    val bauhaus = Skin(
+        id = "bauhaus", name = "Bauhaus",
+        light = Palette(0xFFF2EBDD, 0xFFE9DFCC, 0xFFFAF6EE, 0xFF111111, 0xFF5C5853, 0xFFD62828, 0xFF111111),
+        corner = 0, upperLabels = true,
+    )
+    val deco = Skin(
+        id = "deco", name = "Art Deco",
+        light = Palette(0xFF101010, 0xFF1C1812, 0xFF1F1B14, 0xFFF3E5AB, 0xFFA8925A, 0xFFD4AF37, 0xFFD4AF37),
+        font = Font.SERIF, corner = 0, upperLabels = true,
+    )
+    val riso = Skin(
+        id = "riso", name = "Risograph",
+        light = Palette(0xFFF6F1E7, 0xFFEFE8DA, 0xFFFBF8F1, 0xFF1A2B6B, 0xFF5A6A9A, 0xFFE0218A, 0xFF0078BF),
+        corner = 6, upperLabels = true,
+    )
+    val blueprint = Skin(
+        id = "blueprint", name = "Blueprint",
+        light = Palette(0xFF0D5596, 0xFF0A4275, 0x1FFFFFFF, 0xFFFFFFFF, 0xFFA9C6E8, 0xFFFFD54F, 0xFFFFFFFF),
+        font = Font.MONO, corner = 0, upperLabels = true,
+    )
+
+    val all = listOf(
+        mono, paper, pixel, retro, kurosawa, anime, ukiyoe, ink, crt, vapor, lcd, teletext,
+        bauhaus, deco, riso, blueprint,
+    )
     fun byId(id: String?) = all.firstOrNull { it.id == id } ?: mono
 }
 
