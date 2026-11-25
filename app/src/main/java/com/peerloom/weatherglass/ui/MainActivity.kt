@@ -85,7 +85,12 @@ class MainActivity : ComponentActivity() {
                     },
                     onSearch = vm::search,
                     onSettings = { s ->
-                        if (s.alerts && !state.settings.alerts) askNotify.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        val old = state.settings
+                        val turnedOn = (s.alerts && !old.alerts) || (s.freezeAlert && !old.freezeAlert) ||
+                            (s.rainSoonAlert && !old.rainSoonAlert)
+                        if (turnedOn && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                            askNotify.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
                         vm.updateSettings(s)
                     },
                 )

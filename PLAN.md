@@ -21,8 +21,9 @@ attention.
 4. **Rain timing:** a single line such as "Rain starting in about 20 minutes",
    from the 15-minute forecast. Hidden when no rain is coming.
 5. **Severe weather alerts:** shown at the top of the screen and sent as a
-   notification. These are the only notifications the app ever sends, and
-   they can be switched off.
+   notification, and can be switched off. Besides these, the only
+   notifications are two alerts people switch on themselves: freeze tonight
+   and rain starting soon (added 2026-11-25).
 6. **Details:** wind speed and direction, humidity, UV, sunrise and sunset.
 7. **Locations:** current location (rough location permission only, checked
    when the app or widget refreshes, never in the background all day) plus

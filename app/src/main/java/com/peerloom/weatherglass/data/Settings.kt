@@ -11,6 +11,10 @@ data class Settings(
     val skin: String,
     val alerts: Boolean,
     val animate: Boolean = true,
+    /** Your own alerts, both off until switched on. */
+    val freezeAlert: Boolean = false,
+    val freezeAtC: Double = 0.0,
+    val rainSoonAlert: Boolean = false,
 )
 
 // Small key-value settings plus the saved places list. One SharedPreferences
@@ -28,6 +32,9 @@ class Prefs(context: Context) {
             skin = p.getString("skin", "mono") ?: "mono",
             alerts = p.getBoolean("alerts", true),
             animate = p.getBoolean("animate", true),
+            freezeAlert = p.getBoolean("freezeAlert", false),
+            freezeAtC = p.getFloat("freezeAtC", 0f).toDouble(),
+            rainSoonAlert = p.getBoolean("rainSoonAlert", false),
         )
         set(s) {
             p.edit()
@@ -37,6 +44,9 @@ class Prefs(context: Context) {
                 .putString("skin", s.skin)
                 .putBoolean("alerts", s.alerts)
                 .putBoolean("animate", s.animate)
+                .putBoolean("freezeAlert", s.freezeAlert)
+                .putFloat("freezeAtC", s.freezeAtC.toFloat())
+                .putBoolean("rainSoonAlert", s.rainSoonAlert)
                 .apply()
         }
 
@@ -53,6 +63,16 @@ class Prefs(context: Context) {
     var seenAlerts: Set<String>
         get() = p.getStringSet("seenAlerts", emptySet()) ?: emptySet()
         set(v) { p.edit().putStringSet("seenAlerts", v).apply() }
+
+    /** Date (yyyy-mm-dd) the freeze alert last fired, so it fires once a night. */
+    var lastFreezeDate: String?
+        get() = p.getString("lastFreezeDate", null)
+        set(v) { p.edit().putString("lastFreezeDate", v).apply() }
+
+    /** When the rain-soon alert last fired (epoch millis). */
+    var lastRainSoon: Long
+        get() = p.getLong("lastRainSoon", 0L)
+        set(v) { p.edit().putLong("lastRainSoon", v).apply() }
 
     fun selectedPlace(): Place? = places.getOrNull(selected) ?: places.firstOrNull()
 }
