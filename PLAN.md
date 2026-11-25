@@ -153,9 +153,11 @@ How skins get made:
 - Only the big weather icon animates. The rest of the screen shows at once,
   so nothing waits on it.
 - Plays once, about 1.5 seconds, each time the app opens, then rests.
-- Every skin gets motion in code: the picture rises or drifts in, and rain or
-  snow falls in the skin's own colors. A few showcase skins also get a short
-  Blender clip.
+- Each animation is specific to its skin (changed 2026-11-25: the shared
+  motion looked wrong on custom skins and was removed). Blender clips for
+  Tabletop dice, Retro-future, Claymation, Kurosawa and Round gauge; Minimal
+  Mono's line icons draw themselves on. Other skins show their picture still,
+  until they get their own.
 - On by default, with an off switch in Settings. Stays off when Android's
   "remove animations" setting is on.
 - Widgets cannot play animations, so this is the app only.

@@ -1,49 +1,48 @@
 package com.peerloom.weatherglass.ui
 
-import com.peerloom.weatherglass.skin.clipFor
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.viewinterop.AndroidView
-import android.widget.ImageView
-import android.graphics.drawable.Drawable
+import android.content.Context
+import android.graphics.ImageDecoder
 import android.graphics.drawable.Animatable2
 import android.graphics.drawable.AnimatedImageDrawable
-import android.graphics.ImageDecoder
+import android.graphics.drawable.Drawable
 import android.provider.Settings as SystemSettings
+import android.widget.ImageView
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
-import com.peerloom.weatherglass.data.Condition
-import com.peerloom.weatherglass.data.conditionFor
-import kotlin.math.PI
-import kotlin.math.sin
+import androidx.compose.ui.viewinterop.AndroidView
+import com.peerloom.weatherglass.skin.clipFor
+import com.peerloom.weatherglass.skin.iconFor
+import org.xmlpull.v1.XmlPullParser
 
-/** How long the opening animation runs, in milliseconds. */
-const val OPENING_MS = 1500
+/** How long the line icons take to draw themselves, in milliseconds. */
+const val DRAW_MS = 1400
 
 /**
- * The big weather icon, animated once when the app opens. Skins with
- * opening clips (res/raw/clip_<skin>_<weather>_<day|night>.webp, rendered
- * in Blender) play the clip once. Every other skin gets motion in code: it rises and
- * fades in, the sun turns into place, clouds and fog drift in, rain and
- * snow fall in the skin's icon color, and thunder flickers. Works the same
- * for every skin because it moves the skin's own picture.
+ * The big weather icon, animated once when the app opens, in the skin's own
+ * way. Skins with opening clips (res/raw/clip_<skin>_<weather>_<day|night>.webp,
+ * rendered in Blender) play the clip once. Skins that use the plain line
+ * icons (Minimal Mono) draw each line on, like a pen. Every other skin just
+ * shows its picture.
  *
  * [play] starts it; [onDone] is called when it finishes, so the caller can
  * remember it already played. When [play] is false the icon is just shown.
@@ -58,79 +57,17 @@ fun OpeningIcon(code: Int, isDay: Boolean, size: Dp, play: Boolean, onDone: () -
     val run = play && !systemOff
     val skin = look.skin
     val clip = remember(skin.id, code, isDay) { clipFor(context, skin, code, isDay) }
-    val useClip = run && clip != 0
-    var clipDone by remember(play) { mutableStateOf(false) }
-    if (useClip && !clipDone) {
-        ClipPlayer(clip, size) {
-            clipDone = true
-            onDone()
-        }
-        return
-    }
-    val t = remember { Animatable(if (run && !useClip) 0f else 1f) }
-    LaunchedEffect(run) {
-        if (run && !useClip) {
-            t.snapTo(0f)
-            t.animateTo(1f, tween(OPENING_MS, easing = LinearEasing))
-        } else {
-            t.snapTo(1f)
-        }
-        if (play && !useClip) onDone()
-    }
+    val (res, isArt) = remember(skin.id, code, isDay) { iconFor(context, skin, code, isDay) }
+    var done by remember(play) { mutableStateOf(!run) }
+    LaunchedEffect(play) { if (play && !run) onDone() }
 
-    val v = t.value
-    val cond = conditionFor(code)
-    // Entrance over the first 40%: rise, grow and fade in.
-    val e = FastOutSlowInEasing.transform((v / 0.4f).coerceIn(0f, 1f))
-    val px = with(LocalDensity.current) { size.toPx() }
-    val drifts = cond == Condition.PARTLY_CLOUDY || cond == Condition.CLOUDY || cond == Condition.FOG
-    val turns = cond == Condition.CLEAR && isDay
-    // Thunder: two quick flickers part way through.
-    val flicker = if (cond == Condition.THUNDER && (v in 0.5f..0.56f || v in 0.63f..0.67f)) 0.45f else 1f
-    val tint = look.icon
-
-    Box(Modifier.size(size)) {
-        Box(
-            Modifier.graphicsLayer {
-                alpha = e * flicker
-                val sc = 0.82f + 0.18f * e
-                scaleX = sc
-                scaleY = sc
-                translationY = (1 - e) * px * 0.12f
-                translationX = if (drifts) (1 - e) * -px * (if (cond == Condition.FOG) 0.25f else 0.15f) else 0f
-                rotationZ = if (turns) (1 - e) * -40f else 0f
-            },
-        ) { WeatherIcon(code, isDay, size) }
-
-        val falling = when (cond) {
-            Condition.RAIN, Condition.DRIZZLE, Condition.SLEET, Condition.SNOW, Condition.THUNDER -> true
-            else -> false
-        }
-        if (falling && v < 1f) {
-            Canvas(Modifier.size(size)) {
-                val w = this.size.width
-                val h = this.size.height
-                val count = if (cond == Condition.DRIZZLE) 8 else 14
-                for (i in 0 until count) {
-                    val x = w * (0.15f + 0.7f * ((i * 0.618f) % 1f))
-                    val delay = (i % 7) / 7f * 0.45f
-                    val p = ((v - 0.25f - delay) / 0.4f).coerceIn(0f, 1f)
-                    if (p <= 0f || p >= 1f) continue
-                    val y = h * (0.5f + 0.55f * p)
-                    val a = (sin(PI * p).toFloat() * 0.85f)
-                    val snowy = cond == Condition.SNOW || (cond == Condition.SLEET && i % 2 == 0)
-                    if (snowy) {
-                        val wobble = sin((p * 6f + i).toDouble()).toFloat() * w * 0.02f
-                        drawCircle(tint.copy(alpha = a), radius = w * 0.018f, center = Offset(x + wobble, y))
-                    } else {
-                        val len = h * (if (cond == Condition.DRIZZLE) 0.035f else 0.07f)
-                        drawLine(
-                            tint.copy(alpha = a), Offset(x + len * 0.25f, y - len), Offset(x, y),
-                            strokeWidth = w * 0.014f, cap = StrokeCap.Round,
-                        )
-                    }
-                }
-            }
+    when {
+        done -> WeatherIcon(code, isDay, size)
+        clip != 0 -> ClipPlayer(clip, size) { done = true; onDone() }
+        !isArt -> DrawOn(context, res, size) { done = true; onDone() }
+        else -> {
+            WeatherIcon(code, isDay, size)
+            LaunchedEffect(Unit) { done = true; onDone() }
         }
     }
 }
@@ -159,3 +96,68 @@ private fun ClipPlayer(clip: Int, size: Dp, onEnd: () -> Unit) {
         },
     )
 }
+
+/**
+ * Draws a line icon's strokes on one after another, like a pen tracing them,
+ * in the skin's icon color, then calls [onEnd].
+ */
+@Composable
+private fun DrawOn(context: Context, res: Int, size: Dp, onEnd: () -> Unit) {
+    val end by rememberUpdatedState(onEnd)
+    val icon = remember(res) { lineIcon(context, res) }
+    if (icon == null) {
+        WeatherIcon(0, true, size)
+        LaunchedEffect(Unit) { end() }
+        return
+    }
+    val t = remember { Animatable(0f) }
+    LaunchedEffect(res) {
+        t.animateTo(1f, tween(DRAW_MS, easing = LinearEasing))
+        end()
+    }
+    val color = look.icon
+    Canvas(Modifier.size(size)) {
+        val k = this.size.minDimension / icon.viewport
+        val total = icon.lengths.sum()
+        var budget = t.value * total
+        scale(k, k, pivot = androidx.compose.ui.geometry.Offset.Zero) {
+            icon.paths.forEachIndexed { i, p ->
+                val len = icon.lengths[i]
+                if (budget <= 0f) return@forEachIndexed
+                val part = Path()
+                PathMeasure().apply { setPath(p, false) }.getSegment(0f, budget.coerceAtMost(len), part, true)
+                drawPath(part, color, style = Stroke(icon.strokes[i], cap = StrokeCap.Round, join = StrokeJoin.Round))
+                budget -= len
+            }
+        }
+    }
+}
+
+private class LineIcon(val viewport: Float, val paths: List<Path>, val strokes: List<Float>, val lengths: List<Float>)
+
+/** Reads a vector drawable's stroked paths so they can be drawn on bit by bit. */
+private fun lineIcon(context: Context, res: Int): LineIcon? = runCatching {
+    val xml = context.resources.getXml(res)
+    val ns = "http://schemas.android.com/apk/res/android"
+    var viewport = 24f
+    val paths = mutableListOf<Path>()
+    val strokes = mutableListOf<Float>()
+    while (xml.next() != XmlPullParser.END_DOCUMENT) {
+        if (xml.eventType != XmlPullParser.START_TAG) continue
+        when (xml.name) {
+            "vector" -> viewport = xml.getAttributeValue(ns, "viewportWidth")?.toFloatOrNull() ?: 24f
+            "path" -> {
+                val data = xml.getAttributeValue(ns, "pathData") ?: continue
+                // Every subpath ("M...") is its own stroke, so each drop or
+                // ray is drawn in turn.
+                data.split(Regex("(?=[Mm])")).filter { it.isNotBlank() }.forEach { sub ->
+                    paths += PathParser().parsePathString(sub).toPath()
+                    strokes += xml.getAttributeValue(ns, "strokeWidth")?.toFloatOrNull() ?: 1.6f
+                }
+            }
+        }
+    }
+    xml.close()
+    val lengths = paths.map { p -> PathMeasure().apply { setPath(p, false) }.length }
+    if (paths.isEmpty()) null else LineIcon(viewport, paths, strokes, lengths)
+}.getOrNull()
