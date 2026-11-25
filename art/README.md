@@ -47,6 +47,29 @@ with `render_skin.py --mini` (the `base` collection and the gauge pointer
 hidden). The app uses a skin's mini pictures for any icon under 40dp
 (a skin's `miniBelow` in `skin/Skin.kt`; Isometric town uses 50dp).
 
+## Opening clips
+
+Tabletop dice, Claymation and Retro-future play a short clip when the app
+opens (every other skin gets motion in code). Each clip ends exactly on the
+still picture.
+
+```
+flatpak run org.blender.Blender -b art/dice.blend -P art/animate_clip.py -- art/out/dice_clip dice
+art/install_clip.sh dice
+```
+
+`animate_clip.py` styles: `smooth` (Retro-future, neon flares), `clay`
+(stop-motion with a squash on landing) and `dice` (the die rolls through its
+numbers and lands on 1 for rain and thunderstorms, 20 for clear skies and 10
+otherwise, then the weather pops up). Clips go to `res/raw/clip_<skin>_*.webp`
+at 240px.
+
+## Day and night
+
+Most weathers look the same by day and night, so only the day picture (and
+clip) of those is shipped. Both install scripts drop a night file that is
+identical to its day file, and the app falls back to the day one.
+
 ## How a scene is laid out
 
 One collection per weather element. `render_skin.py` shows only the

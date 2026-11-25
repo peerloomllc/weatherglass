@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Skin art is looked up by name (skin_<id>_<weather>), so keep it from
-     being stripped as unused in release builds. -->
-<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@drawable/wx_*,@drawable/skin_*" />
+     being stripped as unused in release builds. Opening clips (raw/clip_*)
+     likewise. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@drawable/wx_*,@drawable/skin_*,@raw/clip_*" />

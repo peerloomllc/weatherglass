@@ -1,5 +1,16 @@
 package com.peerloom.weatherglass.ui
 
+import com.peerloom.weatherglass.skin.clipFor
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.viewinterop.AndroidView
+import android.widget.ImageView
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.Animatable2
+import android.graphics.drawable.AnimatedImageDrawable
+import android.graphics.ImageDecoder
 import android.provider.Settings as SystemSettings
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -27,7 +38,9 @@ import kotlin.math.sin
 const val OPENING_MS = 1500
 
 /**
- * The big weather icon, animated once when the app opens: it rises and
+ * The big weather icon, animated once when the app opens. Skins with
+ * opening clips (res/raw/clip_<skin>_<weather>_<day|night>.webp, rendered
+ * in Blender) play the clip once. Every other skin gets motion in code: it rises and
  * fades in, the sun turns into place, clouds and fog drift in, rain and
  * snow fall in the skin's icon color, and thunder flickers. Works the same
  * for every skin because it moves the skin's own picture.
@@ -43,15 +56,26 @@ fun OpeningIcon(code: Int, isDay: Boolean, size: Dp, play: Boolean, onDone: () -
         SystemSettings.Global.getFloat(context.contentResolver, SystemSettings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
     }
     val run = play && !systemOff
-    val t = remember { Animatable(if (run) 0f else 1f) }
+    val skin = look.skin
+    val clip = remember(skin.id, code, isDay) { clipFor(context, skin, code, isDay) }
+    val useClip = run && clip != 0
+    var clipDone by remember(play) { mutableStateOf(false) }
+    if (useClip && !clipDone) {
+        ClipPlayer(clip, size) {
+            clipDone = true
+            onDone()
+        }
+        return
+    }
+    val t = remember { Animatable(if (run && !useClip) 0f else 1f) }
     LaunchedEffect(run) {
-        if (run) {
+        if (run && !useClip) {
             t.snapTo(0f)
             t.animateTo(1f, tween(OPENING_MS, easing = LinearEasing))
         } else {
             t.snapTo(1f)
         }
-        if (play) onDone()
+        if (play && !useClip) onDone()
     }
 
     val v = t.value
@@ -109,4 +133,29 @@ fun OpeningIcon(code: Int, isDay: Boolean, size: Dp, play: Boolean, onDone: () -
             }
         }
     }
+}
+
+/** Plays an animated WebP once at [size], then calls [onEnd]. */
+@Composable
+private fun ClipPlayer(clip: Int, size: Dp, onEnd: () -> Unit) {
+    val end by rememberUpdatedState(onEnd)
+    AndroidView(
+        modifier = Modifier.size(size),
+        factory = { ctx ->
+            ImageView(ctx).apply {
+                scaleType = ImageView.ScaleType.FIT_CENTER
+                val d = runCatching { ImageDecoder.decodeDrawable(ImageDecoder.createSource(ctx.resources, clip)) }.getOrNull()
+                if (d is AnimatedImageDrawable) {
+                    d.repeatCount = 0
+                    d.registerAnimationCallback(object : Animatable2.AnimationCallback() {
+                        override fun onAnimationEnd(drawable: Drawable?) = end()
+                    })
+                    setImageDrawable(d)
+                    d.start()
+                } else {
+                    post { end() }
+                }
+            }
+        },
+    )
 }

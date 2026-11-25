@@ -30,4 +30,10 @@ for f in "$src"/*_day.png "$src"/*_night.png; do
     "${save[@]}" "$dst/skin_${skin}_${base}${suffix}.webp"
   n=$((n+1))
 done
+# Most weathers look the same by day and night. Keep only the day picture
+# of those; the app falls back to it at night.
+for f in "$dst"/skin_"${skin}"_*_night"${suffix}".webp; do
+  [ -e "$f" ] || continue
+  if cmp -s "$f" "${f/_night/_day}"; then rm "$f"; n=$((n-1)); fi
+done
 echo "installed $n pictures for $skin$suffix ($(du -ch "$dst"/skin_"${skin}"_*"${suffix}".webp | tail -1 | cut -f1) total)"
