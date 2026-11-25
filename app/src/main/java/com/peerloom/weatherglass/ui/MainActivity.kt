@@ -29,12 +29,14 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     private val vm: MainViewModel by viewModels()
 
-    // Counts each time the app comes to the front, so the opening animation
-    // plays once per opening.
-    private var opens by mutableIntStateOf(0)
+    // Counts openings, so the opening animation plays once per opening. It
+    // moves on when the app goes to the background, so the screen is already
+    // set to animate when it comes back and the finished icon never flashes
+    // first.
+    private var opens by mutableIntStateOf(1)
 
-    override fun onStart() {
-        super.onStart()
+    override fun onStop() {
+        super.onStop()
         opens++
     }
 
