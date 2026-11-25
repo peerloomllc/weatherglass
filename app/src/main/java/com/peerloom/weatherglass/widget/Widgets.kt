@@ -63,7 +63,6 @@ import com.peerloom.weatherglass.skin.Font
 import com.peerloom.weatherglass.skin.Palette
 import com.peerloom.weatherglass.skin.Skin
 import com.peerloom.weatherglass.skin.Skins
-import com.peerloom.weatherglass.skin.MINI_BELOW_DP
 import com.peerloom.weatherglass.skin.iconFor
 import com.peerloom.weatherglass.ui.MainActivity
 
@@ -323,7 +322,7 @@ private fun label(d: WData, s: String) = if (d.skin.upperLabels) s.uppercase() e
 
 @Composable
 private fun Icon(context: Context, d: WData, code: Int, isDay: Boolean, size: Dp) {
-    val (res, isArt) = iconFor(context, d.skin, code, isDay, size < MINI_BELOW_DP.dp)
+    val (res, isArt) = iconFor(context, d.skin, code, isDay, size < d.skin.miniBelow.dp)
     Image(
         ImageProvider(res), conditionLabel(code, isDay), GlanceModifier.size(size),
         colorFilter = if (isArt) null else ColorFilter.tint(ColorProvider(Color(d.p.icon))),
