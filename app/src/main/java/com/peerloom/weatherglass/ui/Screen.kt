@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
@@ -76,9 +77,10 @@ fun T(
     weight: FontWeight = FontWeight.Normal,
     modifier: Modifier = Modifier,
     maxLines: Int = Int.MAX_VALUE,
+    align: TextAlign? = null,
 ) = Text(
     text, modifier = modifier, maxLines = maxLines, overflow = TextOverflow.Ellipsis,
-    style = TextStyle(color = color, fontSize = size, fontWeight = weight, fontFamily = look.font),
+    style = TextStyle(color = color, fontSize = size, fontWeight = weight, fontFamily = look.font, textAlign = align ?: TextAlign.Unspecified),
 )
 
 @Composable
@@ -213,7 +215,8 @@ private fun AlertCard(a: Alert) {
             .background(Color(if (severe) p.alert else p.alertMild)).clickable { open = !open }.padding(16.dp),
     ) {
         Column {
-            T(look.label(a.event), 16.sp, ink, FontWeight.Bold)
+            T(look.label(a.event), 16.sp, ink, FontWeight.Bold, Modifier.fillMaxWidth(), align = TextAlign.Center)
+            Spacer(Modifier.height(8.dp))
             T(a.headline, 14.sp, ink, maxLines = if (open) Int.MAX_VALUE else 2)
             if (open && a.description.isNotBlank()) {
                 Spacer(Modifier.height(8.dp))
