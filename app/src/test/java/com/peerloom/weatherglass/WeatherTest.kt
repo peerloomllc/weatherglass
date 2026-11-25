@@ -14,6 +14,11 @@ import com.peerloom.weatherglass.data.hourLabel
 import com.peerloom.weatherglass.data.rainTiming
 import com.peerloom.weatherglass.data.temp
 import com.peerloom.weatherglass.data.windText
+import com.peerloom.weatherglass.data.Current
+import com.peerloom.weatherglass.data.Forecast
+import com.peerloom.weatherglass.data.Hour
+import com.peerloom.weatherglass.data.freezeTonight
+import com.peerloom.weatherglass.data.rainSoon
 import com.peerloom.weatherglass.skin.Skins
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -102,5 +107,40 @@ class WeatherTest {
         val grouped = Skins.groups.flatMap { it.second }
         assertEquals(Skins.all.size, grouped.size)
         assertEquals(Skins.all.map { it.id }.toSet(), grouped.map { it.id }.toSet())
+    }
+
+    private fun forecast(hours: List<Pair<String, Double>>, quarters: List<Pair<String, Double>> = emptyList()) = Forecast(
+        place = Place("Testville", 0.0, 0.0), fetchedAt = 0, utcOffsetSeconds = 0,
+        current = Current("2026-11-25T18:00", 5.0, 5.0, 50, 5.0, 0, 3, false),
+        hours = hours.map { (t, c) -> Hour(t, c, 0, 0.0, 3, false) },
+        days = emptyList(),
+        quarters = quarters.map { (t, mm) -> Quarter(t, mm) },
+    )
+
+    @Test
+    fun freezeFiresInTheEveningOncePerNight() {
+        val f = forecast(listOf("2026-11-25T18:00" to 4.0, "2026-11-26T03:00" to -1.5, "2026-11-26T05:00" to -2.0, "2026-11-26T12:00" to -9.0))
+        val evening = LocalDateTime.parse("2026-11-25T18:20")
+        val fr = freezeTonight(f, evening, 0.0, null)!!
+        assertEquals(-2.0, fr.lowC, 0.01) // the noon -9 is after 10 am, so not "tonight"
+        assertEquals(5, fr.at.hour)
+        assertNull(freezeTonight(f, evening, 0.0, "2026-11-25")) // already sent today
+        assertNull(freezeTonight(f, LocalDateTime.parse("2026-11-25T11:00"), 0.0, null)) // not evening
+        assertNull(freezeTonight(f, evening, -5.0, null)) // not cold enough
+    }
+
+    @Test
+    fun rainSoonOnlyWhenDryAndStartingWithinTheHour() {
+        val now = LocalDateTime.parse("2026-11-25T14:00")
+        val ms = 10_000_000_000L
+        val q = listOf("2026-11-25T14:00" to 0.0, "2026-11-25T14:15" to 0.0, "2026-11-25T14:30" to 0.4, "2026-11-25T14:45" to 0.8)
+        val f = forecast(listOf("2026-11-25T14:00" to 10.0), q)
+        assertEquals(30L, rainSoon(f, now, ms, 0L)!!.minutes)
+        assertNull(rainSoon(f, now, ms, ms - 30 * 60_000L)) // sent half an hour ago
+        assertNull(rainSoon(f, LocalDateTime.parse("2026-11-25T23:00"), ms, 0L)) // quiet hours
+        val wet = forecast(emptyList(), listOf("2026-11-25T14:00" to 0.5, "2026-11-25T14:15" to 0.5))
+        assertNull(rainSoon(wet, now, ms, 0L)) // already raining
+        val later = forecast(emptyList(), listOf("2026-11-25T14:00" to 0.0, "2026-11-25T15:30" to 0.5))
+        assertNull(rainSoon(later, now, ms, 0L)) // more than an hour away
     }
 }

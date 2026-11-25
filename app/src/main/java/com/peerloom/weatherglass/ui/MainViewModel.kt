@@ -129,8 +129,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun updateSettings(s: Settings) {
-        val alertsTurnedOn = s.alerts && !_state.value.settings.alerts
+        val old = _state.value.settings
+        val alertsTurnedOn = s.alerts && !old.alerts
         prefs.settings = s
+        if (s.rainSoonAlert != old.rainSoonAlert) RefreshWorker.schedule(getApplication())
         _state.update { it.copy(settings = s) }
         viewModelScope.launch { Widgets.updateAll(getApplication()) }
         if (alertsTurnedOn) refresh(force = true)
