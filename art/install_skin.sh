@@ -13,7 +13,7 @@ mkdir -p "$dst"
 # Pixel art is scaled with hard edges and saved lossless so the cells stay
 # sharp and the colors exact. Everything else is smoothed and saved lossy.
 case $skin in
-  pixel) look=(-filter point -resize 340x340); save=(-define webp:lossless=true) ;;
+  pixel | teletext) look=(-filter point -resize 340x340); save=(-define webp:lossless=true) ;;
   *) look=(-resize 340x340); save=(-define webp:lossless=false -quality 88 -define webp:alpha-quality=100) ;;
 esac
 n=0

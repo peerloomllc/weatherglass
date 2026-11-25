@@ -59,38 +59,83 @@ def _noise(nt, scale, stretch=1.0, detail=6.0):
     return mr.outputs["Result"]
 
 
-def flat(color, alpha=1.0, grain=0.0, grain_scale=60.0, stretch=1.0, alpha_grain=0.0):
-    """Unlit color. grain: how much the brightness varies with a noise
-    texture (film grain, paper, wood). alpha_grain: how much the opacity
-    varies (ink and paint that soaks in unevenly)."""
-    name = f"flat_{color}_{alpha}_{grain}_{grain_scale}_{stretch}_{alpha_grain}"
-    if name in _mats:
-        return _mats[name]
-    m, nt, out = _new(name)
+def _scanlines(nt, scan, period):
+    # 1 - scan .. 1, in horizontal stripes "period" world units apart, lined
+    # up across every shape like the lines of a CRT screen.
+    geo = nt.nodes.new("ShaderNodeNewGeometry")
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    k = nt.nodes.new("ShaderNodeMath")
+    k.operation = "MULTIPLY"
+    k.inputs[1].default_value = 2 * math.pi / period
+    sn = nt.nodes.new("ShaderNodeMath")
+    sn.operation = "SINE"
+    st = nt.nodes.new("ShaderNodeMath")
+    st.operation = "MULTIPLY_ADD"
+    st.inputs[1].default_value = scan / 2
+    st.inputs[2].default_value = 1.0 - scan / 2
+    nt.links.new(geo.outputs["Position"], sep.inputs[0])
+    nt.links.new(sep.outputs["Y"], k.inputs[0])
+    nt.links.new(k.outputs[0], sn.inputs[0])
+    nt.links.new(sn.outputs[0], st.inputs[0])
+    return st.outputs[0]
+
+
+def _finish(m, nt, out, color, alpha, alpha_fac=None, grain=0.0, grain_fac=None, scan=0.0, scan_period=0.026):
+    """Wire an emission of "color" (an RGBA tuple or a color socket) to the
+    output, with optional grain, scanlines and see-through."""
     em = nt.nodes.new("ShaderNodeEmission")
-    m.diffuse_color = srgb(color)
-    col = srgb(color)
-    if grain or alpha_grain:
-        fac = _noise(nt, grain_scale, stretch)
-    if grain:
-        # color * (1 - grain/2 + grain * noise)
-        mul = nt.nodes.new("ShaderNodeMath")
-        mul.operation = "MULTIPLY_ADD"
-        mul.inputs[1].default_value = grain
-        mul.inputs[2].default_value = 1.0 - grain / 2
-        nt.links.new(fac, mul.inputs[0])
+    col = color
+    for amount, fac in ((grain, grain_fac), (scan, None)):
+        if not amount:
+            continue
+        if fac is None:
+            fac = _scanlines(nt, scan, scan_period)
+        else:
+            mul = nt.nodes.new("ShaderNodeMath")
+            mul.operation = "MULTIPLY_ADD"
+            mul.inputs[1].default_value = amount
+            mul.inputs[2].default_value = 1.0 - amount / 2
+            nt.links.new(fac, mul.inputs[0])
+            fac = mul.outputs[0]
         sc = nt.nodes.new("ShaderNodeVectorMath")
         sc.operation = "SCALE"
-        sc.inputs[0].default_value = col[:3]
-        nt.links.new(mul.outputs[0], sc.inputs["Scale"])
-        nt.links.new(sc.outputs[0], em.inputs["Color"])
-    else:
+        if isinstance(col, tuple):
+            sc.inputs[0].default_value = col[:3]
+        else:
+            nt.links.new(col, sc.inputs[0])
+        nt.links.new(fac, sc.inputs["Scale"])
+        col = sc.outputs[0]
+    if isinstance(col, tuple):
         em.inputs["Color"].default_value = col
-    if alpha >= 1.0 and not alpha_grain:
+    else:
+        nt.links.new(col, em.inputs["Color"])
+    if alpha >= 1.0 and alpha_fac is None:
         nt.links.new(em.outputs[0], out.inputs["Surface"])
         return m
     tr = nt.nodes.new("ShaderNodeBsdfTransparent")
     mix = nt.nodes.new("ShaderNodeMixShader")
+    if alpha_fac is not None:
+        nt.links.new(alpha_fac, mix.inputs["Fac"])
+    else:
+        mix.inputs["Fac"].default_value = alpha
+    nt.links.new(tr.outputs[0], mix.inputs[1])
+    nt.links.new(em.outputs[0], mix.inputs[2])
+    nt.links.new(mix.outputs[0], out.inputs["Surface"])
+    return m
+
+
+def flat(color, alpha=1.0, grain=0.0, grain_scale=60.0, stretch=1.0, alpha_grain=0.0, scan=0.0):
+    """Unlit color. grain: how much the brightness varies with a noise
+    texture (film grain, paper, wood). alpha_grain: how much the opacity
+    varies (ink and paint that soaks in unevenly). scan: how dark the gaps
+    between CRT scanlines are."""
+    name = f"flat_{color}_{alpha}_{grain}_{grain_scale}_{stretch}_{alpha_grain}_{scan}"
+    if name in _mats:
+        return _mats[name]
+    m, nt, out = _new(name)
+    m.diffuse_color = srgb(color)
+    fac = _noise(nt, grain_scale, stretch) if (grain or alpha_grain) else None
+    afac = None
     if alpha_grain:
         a = nt.nodes.new("ShaderNodeMath")
         a.operation = "MULTIPLY_ADD"
@@ -98,13 +143,34 @@ def flat(color, alpha=1.0, grain=0.0, grain_scale=60.0, stretch=1.0, alpha_grain
         a.inputs[1].default_value = alpha_grain * 2
         a.inputs[2].default_value = alpha - alpha_grain
         nt.links.new(fac, a.inputs[0])
-        nt.links.new(a.outputs[0], mix.inputs["Fac"])
-    else:
-        mix.inputs["Fac"].default_value = alpha
-    nt.links.new(tr.outputs[0], mix.inputs[1])
-    nt.links.new(em.outputs[0], mix.inputs[2])
-    nt.links.new(mix.outputs[0], out.inputs["Surface"])
-    return m
+        afac = a.outputs[0]
+    return _finish(m, nt, out, srgb(color), alpha, afac, grain, fac, scan)
+
+
+def gradient(colors, extent, alpha=1.0, axis="Y", scan=0.0):
+    """Unlit color that runs through "colors" from -extent to +extent along
+    the object's own axis (bottom to top for Y)."""
+    name = f"grad_{'_'.join(colors)}_{extent}_{alpha}_{axis}_{scan}"
+    if name in _mats:
+        return _mats[name]
+    m, nt, out = _new(name)
+    m.diffuse_color = srgb(colors[-1])
+    tc = nt.nodes.new("ShaderNodeTexCoord")
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    mr = nt.nodes.new("ShaderNodeMapRange")
+    mr.inputs["From Min"].default_value = -extent
+    mr.inputs["From Max"].default_value = extent
+    ramp = nt.nodes.new("ShaderNodeValToRGB")
+    els = ramp.color_ramp.elements
+    while len(els) < len(colors):
+        els.new(0.5)
+    for i, col in enumerate(colors):
+        els[i].position = i / (len(colors) - 1)
+        els[i].color = srgb(col)
+    nt.links.new(tc.outputs["Object"], sep.inputs[0])
+    nt.links.new(sep.outputs[axis], mr.inputs["Value"])
+    nt.links.new(mr.outputs["Result"], ramp.inputs["Fac"])
+    return _finish(m, nt, out, ramp.outputs["Color"], alpha, scan=scan)
 
 
 def radial(inner, outer, alpha_in=1.0, alpha_out=1.0):
@@ -230,6 +296,48 @@ def poly(c, m, pts, z=0.0, name="shape"):
     o.location = (ax, ay, z)
     bpy.context.scene.collection.objects.link(o)
     return put(o, m, c)
+
+
+def stroke(c, m, pts, w, z=0.0, closed=True, name="line"):
+    """A line of width w through the points, with round joints: line art
+    instead of a filled shape."""
+    ax = sum(p[0] for p in pts) / len(pts)
+    ay = sum(p[1] for p in pts) / len(pts)
+    me = bpy.data.meshes.new(name)
+    bm = bmesh.new()
+    segs = list(zip(pts, pts[1:] + pts[:1])) if closed else list(zip(pts, pts[1:]))
+    for (x0, y0), (x1, y1) in segs:
+        dx, dy = x1 - x0, y1 - y0
+        d = math.hypot(dx, dy)
+        if d < 1e-9:
+            continue
+        nx, ny = -dy / d * w / 2, dx / d * w / 2
+        vs = [bm.verts.new((px - ax, py - ay, 0)) for px, py in
+              ((x0 + nx, y0 + ny), (x0 - nx, y0 - ny), (x1 - nx, y1 - ny), (x1 + nx, y1 + ny))]
+        bm.faces.new(vs)
+    # Round caps at open ends, and round joints where the line turns (smooth
+    # curves skip them to stay light).
+    for i, (px, py) in enumerate(pts):
+        end = not closed and i in (0, len(pts) - 1)
+        if not end:
+            prev, nxt = pts[i - 1], pts[(i + 1) % len(pts)]
+            a1 = math.atan2(py - prev[1], px - prev[0])
+            a2 = math.atan2(nxt[1] - py, nxt[0] - px)
+            if abs(math.remainder(a2 - a1, 2 * math.pi)) < 0.2:
+                continue
+        vs = [bm.verts.new((px - ax + w / 2 * math.cos(2 * math.pi * k / 16),
+                            py - ay + w / 2 * math.sin(2 * math.pi * k / 16), 0)) for k in range(16)]
+        bm.faces.new(vs)
+    bm.to_mesh(me)
+    bm.free()
+    o = bpy.data.objects.new(name, me)
+    o.location = (ax, ay, z)
+    bpy.context.scene.collection.objects.link(o)
+    return put(o, m, c)
+
+
+def circle_pts(x, y, r, steps=96):
+    return [(x + r * math.cos(2 * math.pi * i / steps), y + r * math.sin(2 * math.pi * i / steps)) for i in range(steps)]
 
 
 def disc(c, m, x, y, r, z=0.0, name="disc", unit=False):

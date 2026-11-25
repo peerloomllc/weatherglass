@@ -83,7 +83,28 @@ object Skins {
         font = Font.SERIF, corner = 0,
     )
 
-    val all = listOf(mono, paper, pixel, retro, kurosawa, anime, ukiyoe, ink)
+    val crt = Skin(
+        id = "crt", name = "CRT Terminal",
+        light = Palette(0xFF040A05, 0xFF07140A, 0xFF0B1F10, 0xFF33FF66, 0xFF1E9C45, 0xFFB3FFC6, 0xFF33FF66),
+        font = Font.MONO, corner = 0, upperLabels = true,
+    )
+    val vapor = Skin(
+        id = "vapor", name = "Vaporwave",
+        light = Palette(0xFFFFB3DE, 0xFFA79BFF, 0x40FFFFFF, 0xFF2B1B4D, 0xFF5E4A8C, 0xFF007C8C, 0xFF2B1B4D),
+        corner = 16, upperLabels = true,
+    )
+    val lcd = Skin(
+        id = "lcd", name = "LCD watch",
+        light = Palette(0xFFA3B18A, 0xFF8E9C76, 0x14000000, 0xFF1F2A1A, 0xFF4A5640, 0xFF1F2A1A, 0xFF1F2A1A),
+        font = Font.MONO, corner = 4,
+    )
+    val teletext = Skin(
+        id = "teletext", name = "Teletext",
+        light = Palette(0xFF000000, 0xFF000000, 0xFF0000C8, 0xFFFFFFFF, 0xFF00FFFF, 0xFFFFFF00, 0xFFFFFFFF),
+        font = Font.MONO, corner = 0, upperLabels = true,
+    )
+
+    val all = listOf(mono, paper, pixel, retro, kurosawa, anime, ukiyoe, ink, crt, vapor, lcd, teletext)
     fun byId(id: String?) = all.firstOrNull { it.id == id } ?: mono
 }
 
