@@ -26,18 +26,8 @@ def smudge(color, alpha):
     return kit.flat(color, alpha, alpha_grain=0.15, grain_scale=10, stretch=3)
 
 
-def wobble(pts, amp=0.008, seed=0.0):
-    """Nudge each point a little, smoothly, so lines look hand drawn."""
-    out = []
-    for i, (x, y) in enumerate(pts):
-        t = i * 0.35 + seed
-        out.append((x + amp * math.sin(t * 1.7) + amp * 0.5 * math.sin(t * 4.1),
-                    y + amp * math.cos(t * 1.3) + amp * 0.5 * math.sin(t * 3.3)))
-    return out
-
-
 def line(c, pts, color, z, closed=True, w=W, seed=0.0):
-    kit.stroke(c, chalk(color), wobble(pts, seed=seed), w, z, closed, "chalk")
+    kit.stroke(c, chalk(color), kit.wobble(pts, seed=seed), w, z, closed, "chalk")
 
 
 def hatch(c, x, y, r, color, z, step=0.06, angle=math.radians(35)):
@@ -49,7 +39,7 @@ def hatch(c, x, y, r, color, z, step=0.06, angle=math.radians(35)):
         half = math.sqrt(max(r * r - k * k, 0)) * 0.92
         p0 = (x + k * -sa - half * ca, y + k * ca - half * sa)
         p1 = (x + k * -sa + half * ca, y + k * ca + half * sa)
-        kit.stroke(c, chalk(color, 0.6), wobble([p0, p1], 0.004, i), W * 0.5, z, False, "hatch")
+        kit.stroke(c, chalk(color, 0.6), kit.wobble([p0, p1], 0.004, i), W * 0.5, z, False, "hatch")
         k += step
         i += 1
 
