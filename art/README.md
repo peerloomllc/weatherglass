@@ -9,11 +9,26 @@ Pictures a skin does not have fall back to the built-in line icons.
 | --- | --- |
 | `<skin>.blend` | The skin's scene. Open it in Blender and edit by hand |
 | `build_paper.py` | Builds the starter Paper cut scene from scratch (overwrites `paper.blend`) |
+| `build_pixel.py` | Builds the starter 8-bit scene (overwrites `pixel.blend`) |
+| `build_retro.py` | Builds the starter Retro-future scene (overwrites `retro.blend`) |
 | `render_skin.py` | Renders a scene into 18 transparent PNGs in `out/<skin>/` |
 | `install_skin.sh` | Turns those PNGs into WebP in the app (`res/drawable-nodpi/skin_<skin>_*.webp`) |
 | `render_all.sh` | Both steps: `art/render_all.sh paper` |
 
-Rendering all 18 takes about 90 seconds on the GPU.
+Rendering all 18 takes about 90 seconds on the GPU for Paper cut, about 40
+for Retro-future and a few seconds for 8-bit.
+
+## The three starter skins
+
+- **Paper cut:** layered paper shapes with small shadows.
+- **8-bit:** real pixel art on a 36 x 36 grid. Each cell is a flat square,
+  one mesh per color per element, so you can add, delete or recolor cells
+  in Blender. It renders at exactly 10 pixels per cell, and
+  `install_skin.sh` scales it with hard edges so it stays sharp.
+- **Retro-future:** neon synthwave. A striped glowing sun, chrome clouds
+  that reflect a pink and cyan sky, and neon rain and lightning with a soft
+  glow. Overlapping glows sit at slightly different heights, since Cycles
+  shades two overlapping flat shapes at the same height black.
 
 ## How a scene is laid out
 

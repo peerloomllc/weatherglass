@@ -10,12 +10,18 @@ here=$(cd "$(dirname "$0")" && pwd)
 src="$here/out/$skin"
 dst="$here/../app/src/main/res/drawable-nodpi"
 mkdir -p "$dst"
+# Pixel art is scaled with hard edges and saved lossless so the cells stay
+# sharp and the colors exact. Everything else is smoothed and saved lossy.
+case $skin in
+  pixel) look=(-filter point -resize 340x340); save=(-define webp:lossless=true) ;;
+  *) look=(-resize 340x340); save=(-define webp:lossless=false -quality 88 -define webp:alpha-quality=100) ;;
+esac
 n=0
 for f in "$src"/*_day.png "$src"/*_night.png; do
   [ -e "$f" ] || continue
   base=$(basename "$f" .png)
-  magick "$f" -trim +repage -resize 340x340 -gravity center -background none -extent 360x360 \
-    -define webp:lossless=false -quality 88 -define webp:alpha-quality=100 "$dst/skin_${skin}_${base}.webp"
+  magick "$f" -trim +repage "${look[@]}" -gravity center -background none -extent 360x360 \
+    "${save[@]}" "$dst/skin_${skin}_${base}.webp"
   n=$((n+1))
 done
 echo "installed $n pictures for $skin ($(du -ch "$dst"/skin_"${skin}"_*.webp | tail -1 | cut -f1) total)"
