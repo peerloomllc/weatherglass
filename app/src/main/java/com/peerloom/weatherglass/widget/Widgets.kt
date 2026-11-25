@@ -217,7 +217,9 @@ private fun Wide(context: Context, d: WData, f: Forecast?, parts: Set<Part>) {
         }
         val c = f.current
         Column(GlanceModifier.defaultWeight(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(context, d, c.code, c.isDay, if (roomy) 36.dp else 30.dp)
+            // Big enough (40dp and up) to show skins' full pictures, like the die
+            // in Tabletop dice, rather than their small plain symbols.
+            Icon(context, d, c.code, c.isDay, if (roomy) 48.dp else 42.dp)
             Txt(d, label(d, conditionLabel(c.code, c.isDay)), 12.sp, subtle = true)
         }
         Column(GlanceModifier.defaultWeight(), horizontalAlignment = Alignment.End) {
