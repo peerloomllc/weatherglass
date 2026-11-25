@@ -35,6 +35,8 @@ data class Skin(
     val corner: Int = 20, // dp
     val upperLabels: Boolean = false,
     val followsSystem: Boolean = false,
+    /** Icons smaller than this (dp) use the skin's "_mini" pictures, if it has them. */
+    val miniBelow: Int = 40,
 ) {
     fun palette(systemDark: Boolean) = if (followsSystem && systemDark) dark else light
 }
@@ -186,6 +188,7 @@ object Skins {
         id = "iso", name = "Isometric town",
         light = Palette(0xFFDDEBF5, 0xFFF1F5EC, 0xB3FFFFFF, 0xFF22313F, 0xFF62727F, 0xFF4E9A45, 0xFF22313F),
         corner = 16,
+        miniBelow = 50, // the town fills the picture, so the 44dp widget icon shows just the weather
     )
     val gauge = Skin(
         id = "gauge", name = "Round gauge",
@@ -228,9 +231,6 @@ fun builtinIcon(code: Int, isDay: Boolean): Int = when (conditionFor(code)) {
 // Returns the drawable and whether it is skin art (shown as is) or the
 // built-in line icon (tinted with the skin's icon color).
 @SuppressLint("DiscouragedApi")
-/** Icons smaller than this use a skin's "_mini" pictures when it has them. */
-const val MINI_BELOW_DP = 40
-
 /**
  * The picture for a weather code in a skin, and whether it is the skin's own
  * art (true) or a built-in line icon to tint (false). Skins that draw the

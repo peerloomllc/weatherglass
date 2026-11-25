@@ -45,7 +45,7 @@ inside a jar, die, dial or town, which gets hard to read in small icons. So
 they have a second set, `skin_<skin>_<weather>_<day|night>_mini`, rendered
 with `render_skin.py --mini` (the `base` collection and the gauge pointer
 hidden). The app uses a skin's mini pictures for any icon under 40dp
-(`MINI_BELOW_DP` in `skin/Skin.kt`).
+(a skin's `miniBelow` in `skin/Skin.kt`; Isometric town uses 50dp).
 
 ## How a scene is laid out
 
