@@ -258,6 +258,34 @@ def setup(samples=32, res=512, gpu=True, denoise=False):
     return scene
 
 
+def lit(energy=2.2, catcher=True):
+    """Switch a scene from flat art to real light: a white sky, a sun from
+    the top left and (optionally) a shadow catcher, so solid shapes cast
+    soft shadows on the transparent background. For skins made of 3D
+    objects (clay, felt)."""
+    scene = bpy.context.scene
+    scene.cycles.max_bounces = 6
+    scene.cycles.use_denoising = True
+    scene.cycles.samples = max(scene.cycles.samples, 96)
+    scene.view_settings.exposure = -0.7
+    scene.world.node_tree.nodes["Background"].inputs["Strength"].default_value = 1.0
+    base = coll("base")
+    sd = bpy.data.lights.new("light", "SUN")
+    sd.energy = energy
+    sd.angle = math.radians(8)
+    light = bpy.data.objects.new("light", sd)
+    light.rotation_euler = (math.radians(-28), math.radians(-24), 0)
+    base.objects.link(light)
+    if catcher:
+        bpy.ops.mesh.primitive_plane_add(size=6, location=(0, 0, -0.05))
+        o = bpy.context.active_object
+        o.name = "shadow_catcher"
+        o.is_shadow_catcher = True
+        for uc in list(o.users_collection):
+            uc.objects.unlink(o)
+        base.objects.link(o)
+
+
 def save():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     bpy.ops.wm.save_as_mainfile(filepath=bpy.path.abspath(argv[0]))

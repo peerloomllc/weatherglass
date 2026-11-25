@@ -12,7 +12,8 @@ Pictures a skin does not have fall back to the built-in line icons.
 | `build_pixel.py` | Builds the starter 8-bit scene (overwrites `pixel.blend`) |
 | `build_retro.py` | Builds the starter Retro-future scene (overwrites `retro.blend`) |
 | `kit.py` | Shared drawing helpers and the common layout for flat skins |
-| `build_kurosawa.py`, `build_anime.py`, `build_ukiyoe.py`, `build_ink.py`, `build_crt.py`, `build_vapor.py`, `build_lcd.py`, `build_bauhaus.py`, `build_deco.py`, `build_riso.py`, `build_blueprint.py` | Flat skins built with `kit.py` |
+| `build_kurosawa.py`, `build_anime.py`, `build_ukiyoe.py`, `build_ink.py`, `build_crt.py`, `build_vapor.py`, `build_lcd.py`, `build_bauhaus.py`, `build_deco.py`, `build_riso.py`, `build_blueprint.py`, `build_watercolor.py`, `build_chalk.py` | Flat skins built with `kit.py` |
+| `build_clay.py`, `build_felt.py` | Lit 3D skins built with `kit.py` and `kit.lit()`. Clay takes about 2 minutes to render |
 | `build_teletext.py` | Block graphics on a 24 x 24 grid, installed with hard edges like 8-bit |
 | `render_skin.py` | Renders a scene into 18 transparent PNGs in `out/<skin>/` |
 | `install_skin.sh` | Turns those PNGs into WebP in the app (`res/drawable-nodpi/skin_<skin>_*.webp`) |
