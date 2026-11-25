@@ -206,16 +206,18 @@ private fun Forecast(state: UiState, onPlaces: () -> Unit, onSettings: () -> Uni
 private fun AlertCard(a: Alert) {
     var open by remember { mutableStateOf(false) }
     val severe = a.severity == "Extreme" || a.severity == "Severe"
+    val p = look.p
+    val ink = Color(if (severe) p.alertText else p.alertMildText)
     Box(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(look.skin.corner.dp))
-            .background(if (severe) Color(0xFFB3261E) else Color(0xFFB26A00)).clickable { open = !open }.padding(16.dp),
+            .background(Color(if (severe) p.alert else p.alertMild)).clickable { open = !open }.padding(16.dp),
     ) {
         Column {
-            T(look.label(a.event), 16.sp, Color.White, FontWeight.Bold)
-            T(a.headline, 14.sp, Color.White, maxLines = if (open) Int.MAX_VALUE else 2)
+            T(look.label(a.event), 16.sp, ink, FontWeight.Bold)
+            T(a.headline, 14.sp, ink, maxLines = if (open) Int.MAX_VALUE else 2)
             if (open && a.description.isNotBlank()) {
                 Spacer(Modifier.height(8.dp))
-                T(a.description, 14.sp, Color.White)
+                T(a.description, 14.sp, ink)
             }
         }
     }
