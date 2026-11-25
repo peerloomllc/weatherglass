@@ -62,7 +62,28 @@ object Skins {
         corner = 28, upperLabels = true,
     )
 
-    val all = listOf(mono, paper, pixel, retro)
+    val kurosawa = Skin(
+        id = "kurosawa", name = "Kurosawa",
+        light = Palette(0xFF121212, 0xFF1E1C1A, 0x1FFFFFFF, 0xFFECE8E0, 0xFF8A8680, 0xFFC8102E, 0xFFECE8E0),
+        font = Font.SERIF, corner = 0, upperLabels = true,
+    )
+    val anime = Skin(
+        id = "anime", name = "Anime",
+        light = Palette(0xFF5AB4F5, 0xFFBFE6FF, 0x59FFFFFF, 0xFF0F2C55, 0xFF2F5E94, 0xFFFF6B8B, 0xFF0F2C55),
+        corner = 24,
+    )
+    val ukiyoe = Skin(
+        id = "ukiyoe", name = "Ukiyo-e",
+        light = Palette(0xFFF1E6CC, 0xFFE4D3AE, 0xFFF8F0DD, 0xFF1F2A44, 0xFF6B6A5E, 0xFFB5432F, 0xFF1F2A44),
+        font = Font.SERIF, corner = 2,
+    )
+    val ink = Skin(
+        id = "ink", name = "Ink wash",
+        light = Palette(0xFFF5F1E8, 0xFFEAE4D6, 0xFFFBF8F2, 0xFF1A1A1A, 0xFF7A756C, 0xFFB22222, 0xFF1A1A1A),
+        font = Font.SERIF, corner = 0,
+    )
+
+    val all = listOf(mono, paper, pixel, retro, kurosawa, anime, ukiyoe, ink)
     fun byId(id: String?) = all.firstOrNull { it.id == id } ?: mono
 }
 

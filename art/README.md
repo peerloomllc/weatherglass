@@ -11,6 +11,8 @@ Pictures a skin does not have fall back to the built-in line icons.
 | `build_paper.py` | Builds the starter Paper cut scene from scratch (overwrites `paper.blend`) |
 | `build_pixel.py` | Builds the starter 8-bit scene (overwrites `pixel.blend`) |
 | `build_retro.py` | Builds the starter Retro-future scene (overwrites `retro.blend`) |
+| `kit.py` | Shared drawing helpers and the common layout for flat skins |
+| `build_kurosawa.py`, `build_anime.py`, `build_ukiyoe.py`, `build_ink.py` | Flat skins built with `kit.py` |
 | `render_skin.py` | Renders a scene into 18 transparent PNGs in `out/<skin>/` |
 | `install_skin.sh` | Turns those PNGs into WebP in the app (`res/drawable-nodpi/skin_<skin>_*.webp`) |
 | `render_all.sh` | Both steps: `art/render_all.sh paper` |
@@ -52,6 +54,13 @@ every picture. The camera looks straight down at a square from -1.1 to 1.1.
 Backgrounds stay transparent so the skin's colors show through.
 
 ## Making a new skin
+
+The quick way for a flat skin: copy one of the short `build_<skin>.py`
+scripts that use `kit.py` (`build_ink.py` is a good start), change how each
+element is drawn, run it to make `<skin>.blend`, then render. Add the skin's
+colors and type to `skin/Skin.kt`.
+
+To start from a hand-made scene instead:
 
 1. Copy `paper.blend` to `<skin>.blend` (the id from `skin/Skin.kt`, e.g.
    `pixel` or `retro`).
