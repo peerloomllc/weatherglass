@@ -125,9 +125,30 @@ object Skins {
         font = Font.MONO, corner = 0, upperLabels = true,
     )
 
+    val watercolor = Skin(
+        id = "watercolor", name = "Watercolor",
+        light = Palette(0xFFFBF8F2, 0xFFF1ECE2, 0xFFFFFFFF, 0xFF2E3A4F, 0xFF7A8597, 0xFF3C7FC1, 0xFF2E3A4F),
+        font = Font.SERIF, corner = 14,
+    )
+    val clay = Skin(
+        id = "clay", name = "Claymation",
+        light = Palette(0xFFEDE8DE, 0xFFE0D9CC, 0xFFF7F3EC, 0xFF3B3530, 0xFF85796D, 0xFFF28C28, 0xFF3B3530),
+        corner = 28,
+    )
+    val felt = Skin(
+        id = "felt", name = "Felt",
+        light = Palette(0xFF2F5D62, 0xFF264C50, 0x26FFFFFF, 0xFFF4EFE6, 0xFFB8CBC6, 0xFFE8A33D, 0xFFF4EFE6),
+        corner = 18,
+    )
+    val chalk = Skin(
+        id = "chalk", name = "Chalkboard",
+        light = Palette(0xFF2E4A3A, 0xFF27402F, 0x1FFFFFFF, 0xFFF4F4EC, 0xFFB5C4B8, 0xFFF7E37A, 0xFFF4F4EC),
+        corner = 4,
+    )
+
     val all = listOf(
         mono, paper, pixel, retro, kurosawa, anime, ukiyoe, ink, crt, vapor, lcd, teletext,
-        bauhaus, deco, riso, blueprint,
+        bauhaus, deco, riso, blueprint, watercolor, clay, felt, chalk,
     )
     fun byId(id: String?) = all.firstOrNull { it.id == id } ?: mono
 }
