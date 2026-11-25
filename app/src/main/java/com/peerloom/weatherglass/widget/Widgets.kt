@@ -167,6 +167,8 @@ private fun Body(context: Context, d: WData, parts: Set<Part>) {
     val f = d.forecast
     val clock = Part.CLOCK in parts
     val date = Part.DATE in parts
+    // Too short to stack the time over the weather: put it all on one line.
+    if ((clock || date) && size.width >= 230.dp && size.height.value < PAD + CLOCK_H + NOW_H) return Wide(context, d, f, parts)
     if (size.height < 90.dp || size.width < 180.dp) return Compact(context, d, f, parts)
 
     var room = size.height.value.toInt() - PAD
@@ -194,6 +196,43 @@ private fun Body(context: Context, d: WData, parts: Set<Part>) {
         if (dayCount > 0) {
             Spacer(GlanceModifier.height(6.dp))
             DaysRows(context, d, f, dayCount, Part.RAIN in parts)
+        }
+    }
+}
+
+// A short widget (about one row), three cells or more wide, with the time
+// or date: everything on one line in three blocks, like a bedside clock. Time and date on the left,
+// the weather symbol and its name in the middle, the temperature with
+// today's high over low beside it (and the place under it) on the right.
+@Composable
+private fun Wide(context: Context, d: WData, f: Forecast?, parts: Set<Part>) {
+    val roomy = LocalSize.current.width >= 300.dp
+    Row(GlanceModifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
+        Column(GlanceModifier.defaultWeight(), horizontalAlignment = Alignment.Start) {
+            Clock(context, d, Part.CLOCK in parts, Part.DATE in parts, if (roomy) 34 else 28, ampm = true)
+        }
+        if (f == null) {
+            Txt(d, "Open Weatherglass", 13.sp, subtle = true)
+            return@Row
+        }
+        val c = f.current
+        Column(GlanceModifier.defaultWeight(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(context, d, c.code, c.isDay, if (roomy) 36.dp else 30.dp)
+            Txt(d, label(d, conditionLabel(c.code, c.isDay)), 12.sp, subtle = true)
+        }
+        Column(GlanceModifier.defaultWeight(), horizontalAlignment = Alignment.End) {
+            val today = f.days.firstOrNull()
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Txt(d, tempText(c.tempC, d.settings.tempUnit), if (roomy) 32.sp else 26.sp)
+                if (today != null && Part.HIGH_LOW in parts) {
+                    Spacer(GlanceModifier.width(4.dp))
+                    Column {
+                        Txt(d, tempText(today.maxC, d.settings.tempUnit), 12.sp)
+                        Txt(d, tempText(today.minC, d.settings.tempUnit), 12.sp, subtle = true)
+                    }
+                }
+            }
+            if (Part.PLACE in parts) Txt(d, f.place.name, 12.sp, subtle = true)
         }
     }
 }
@@ -243,7 +282,7 @@ private fun Frame(d: WData, content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun Clock(context: Context, d: WData, time: Boolean, date: Boolean, timeSp: Int) {
+private fun Clock(context: Context, d: WData, time: Boolean, date: Boolean, timeSp: Int, ampm: Boolean = false) {
     val layout = when (d.skin.font) {
         Font.SERIF -> R.layout.widget_clock_serif
         Font.MONO -> R.layout.widget_clock_mono
@@ -259,6 +298,10 @@ private fun Clock(context: Context, d: WData, time: Boolean, date: Boolean, time
         setTextColor(R.id.clock_date, d.p.subtle.toInt())
         setTextViewTextSize(R.id.clock_date, TypedValue.COMPLEX_UNIT_SP, if (time) 14f else 18f)
         setViewVisibility(R.id.clock_date, if (date) android.view.View.VISIBLE else android.view.View.GONE)
+        val showAmpm = ampm && time && !d.settings.use24h
+        setViewVisibility(R.id.clock_ampm, if (showAmpm) android.view.View.VISIBLE else android.view.View.GONE)
+        setTextColor(R.id.clock_ampm, d.p.text.toInt())
+        setTextViewTextSize(R.id.clock_ampm, TypedValue.COMPLEX_UNIT_SP, timeSp * 0.38f)
     }
     // Without a set height the embedded clock takes all the room it is given.
     val h = (if (time) timeSp + 8 else 0) + (if (date) (if (time) 20 else 26) else 0)

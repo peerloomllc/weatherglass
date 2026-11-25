@@ -5,13 +5,31 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical">
-    <TextClock
-        android:id="@+id/clock_time"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="sans-serif"
-        android:includeFontPadding="false"
-        android:maxLines="1" />
+        android:orientation="horizontal"
+        android:baselineAligned="true">
+        <TextClock
+            android:id="@+id/clock_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif"
+            android:includeFontPadding="false"
+            android:maxLines="1" />
+        <!-- AM/PM beside the time, small, for the wide one-row layout. -->
+        <TextClock
+            android:id="@+id/clock_ampm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:fontFamily="sans-serif"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:visibility="gone"
+            android:format12Hour="a"
+            android:format24Hour="" />
+    </LinearLayout>
     <TextClock
         android:id="@+id/clock_date"
         android:layout_width="wrap_content"
