@@ -21,8 +21,6 @@ release install.
 
 ## Skin art
 
-Skin pictures go in `app/src/main/res/drawable` named
-`skin_<skin>_<weather>_<day|night>` (for example `skin_paper_rain_day.png`).
-Weather types: clear, partly, cloudy, fog, drizzle, rain, sleet, snow,
-thunder. Any picture a skin lacks falls back to the built-in line icon in
-the skin's colors. See `PLAN.md` for the plan and decisions.
+Skin pictures are made in Blender and rendered by script. See
+`art/README.md`. Any picture a skin lacks falls back to the built-in line
+icon in the skin's colors. See `PLAN.md` for the plan and decisions.
