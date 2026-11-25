@@ -253,9 +253,24 @@ fun builtinIcon(code: Int, isDay: Boolean): Int = when (conditionFor(code)) {
  * with just the weather, used when [small] is true so it stays readable.
  */
 fun iconFor(context: Context, skin: Skin, code: Int, isDay: Boolean, small: Boolean = false): Pair<Int, Boolean> {
-    val name = "skin_${skin.id}_${artKey(conditionFor(code))}_${if (isDay) "day" else "night"}"
-    val res = context.resources
-    val art = (if (small) res.getIdentifier(name + "_mini", "drawable", context.packageName) else 0)
-        .takeIf { it != 0 } ?: res.getIdentifier(name, "drawable", context.packageName)
+    val art = artId(context, "drawable", "skin_${skin.id}", code, isDay, if (small) "_mini" else "")
+        .takeIf { it != 0 } ?: artId(context, "drawable", "skin_${skin.id}", code, isDay, "")
     return if (art != 0) art to true else builtinIcon(code, isDay) to false
+}
+
+/** A skin's opening clip for this weather (res/raw/clip_...), or 0 if it has none. */
+fun clipFor(context: Context, skin: Skin, code: Int, isDay: Boolean): Int =
+    artId(context, "raw", "clip_${skin.id}", code, isDay, "")
+
+/**
+ * Looks up <prefix>_<weather>_<day|night><suffix>. Most weathers look the
+ * same by day and night, so the art ships only the day version of those and
+ * a missing night version falls back to the day one.
+ */
+@SuppressLint("DiscouragedApi")
+private fun artId(context: Context, type: String, prefix: String, code: Int, isDay: Boolean, suffix: String): Int {
+    val res = context.resources
+    val base = "${prefix}_${artKey(conditionFor(code))}"
+    if (!isDay) res.getIdentifier("${base}_night$suffix", type, context.packageName).let { if (it != 0) return it }
+    return res.getIdentifier("${base}_day$suffix", type, context.packageName)
 }
