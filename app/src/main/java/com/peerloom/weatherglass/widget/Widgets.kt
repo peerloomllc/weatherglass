@@ -19,7 +19,11 @@ import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
-import androidx.glance.appwidget.updateAll
+import androidx.compose.runtime.remember
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.state.updateAppWidgetState
+import androidx.glance.currentState
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -57,11 +61,23 @@ import com.peerloom.weatherglass.ui.MainActivity
 // Three widget sizes. All read the saved forecast for the selected place and
 // never touch the network themselves. Tapping any of them opens the app.
 
+// A widget's content runs once and then only recomposes, so it must not hold
+// on to what it read at start. Each update bumps a version number in the
+// widget's own state, and the content reloads the saved forecast whenever
+// that number changes.
+private val VERSION = longPreferencesKey("version")
+
 object Widgets {
     suspend fun updateAll(context: Context) {
-        runCatching { SmallWidget().updateAll(context) }
-        runCatching { MediumWidget().updateAll(context) }
-        runCatching { LargeWidget().updateAll(context) }
+        val mgr = GlanceAppWidgetManager(context)
+        listOf(SmallWidget(), MediumWidget(), LargeWidget()).forEach { w ->
+            runCatching {
+                mgr.getGlanceIds(w.javaClass).forEach { id ->
+                    updateAppWidgetState(context, id) { it[VERSION] = (it[VERSION] ?: 0L) + 1 }
+                    w.update(context, id)
+                }
+            }
+        }
     }
 }
 
@@ -78,8 +94,11 @@ private fun load(context: Context): WData {
 
 abstract class BaseWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val d = load(context)
-        provideContent { Frame(context, d) { Body(context, d) } }
+        provideContent {
+            val version = currentState(VERSION) ?: 0L
+            val d = remember(version) { load(context) }
+            Frame(context, d) { Body(context, d) }
+        }
     }
 
     @Composable
