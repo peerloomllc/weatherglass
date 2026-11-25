@@ -14,6 +14,7 @@ import com.peerloom.weatherglass.data.hourLabel
 import com.peerloom.weatherglass.data.rainTiming
 import com.peerloom.weatherglass.data.temp
 import com.peerloom.weatherglass.data.windText
+import com.peerloom.weatherglass.skin.Skins
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -94,5 +95,12 @@ class WeatherTest {
         assertTrue(Nws.covers(18.47, -66.1)) // San Juan
         assertFalse(Nws.covers(48.86, 2.35)) // Paris
         assertFalse(Nws.covers(-33.9, 151.2)) // Sydney
+    }
+
+    @Test
+    fun everySkinIsInExactlyOneGroup() {
+        val grouped = Skins.groups.flatMap { it.second }
+        assertEquals(Skins.all.size, grouped.size)
+        assertEquals(Skins.all.map { it.id }.toSet(), grouped.map { it.id }.toSet())
     }
 }

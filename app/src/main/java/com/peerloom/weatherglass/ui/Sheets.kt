@@ -1,5 +1,12 @@
 package com.peerloom.weatherglass.ui
 
+import com.peerloom.weatherglass.skin.Skin
+import com.peerloom.weatherglass.skin.Palette
+import androidx.compose.ui.draw.rotate
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -124,43 +131,115 @@ fun PlacesSheet(
 
 @Composable
 fun SettingsSheet(settings: Settings, onDismiss: () -> Unit, onChange: (Settings) -> Unit) = Sheet(onDismiss) {
-    Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    val current = Skins.byId(settings.skin)
+    var skinOpen by rememberSaveable { mutableStateOf(false) }
+    var unitsOpen by rememberSaveable { mutableStateOf(false) }
+    var alertsOpen by rememberSaveable { mutableStateOf(false) }
+    Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         T(look.label("Settings"), 20.sp, weight = FontWeight.Medium)
-        T(look.label("Skin"), 13.sp, look.subtle)
-        val dark = isSystemInDarkTheme()
-        Skins.all.chunked(2).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                row.forEach { skin ->
-                    val p = skin.palette(dark)
-                    val picked = skin.id == settings.skin
-                    CompositionLocalProvider(LocalLook provides Look(skin, p)) {
-                        Column(
-                            Modifier.weight(1f).clip(RoundedCornerShape(16.dp))
-                                .background(Color(p.bgTop))
-                                .border(if (picked) 3.dp else 1.dp, if (picked) Color(p.accent) else Color(p.subtle).copy(alpha = 0.4f), RoundedCornerShape(16.dp))
-                                .clickable { onChange(settings.copy(skin = skin.id)) }.padding(14.dp),
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                WeatherIcon(2, true, 32.dp)
-                                Spacer(Modifier.width(8.dp))
-                                T("72°", 24.sp, weight = FontWeight.Light)
-                            }
-                            Spacer(Modifier.height(6.dp))
-                            T(look.label(skin.name), 14.sp, weight = FontWeight.Medium, maxLines = 1)
-                        }
-                    }
+
+        Section("Skin", current.name, skinOpen, { skinOpen = !skinOpen }) {
+            Skins.groups.forEach { (name, skins) ->
+                SkinGroup(name, skins, settings, onChange, startOpen = current in skins)
+            }
+        }
+
+        val units = listOf(
+            if (settings.tempUnit == TempUnit.F) "°F" else "°C",
+            settings.windUnit.label,
+            if (settings.use24h) "24 hour" else "12 hour",
+        ).joinToString("  ·  ")
+        Section("Units", units, unitsOpen, { unitsOpen = !unitsOpen }) {
+            T(look.label("Temperature"), 13.sp, look.subtle)
+            Choice(listOf("°F" to TempUnit.F, "°C" to TempUnit.C), settings.tempUnit) { onChange(settings.copy(tempUnit = it)) }
+            T(look.label("Wind"), 13.sp, look.subtle)
+            Choice(WindUnit.entries.map { it.label to it }, settings.windUnit) { onChange(settings.copy(windUnit = it)) }
+            T(look.label("Clock"), 13.sp, look.subtle)
+            Choice(listOf("12 hour" to false, "24 hour" to true), settings.use24h) { onChange(settings.copy(use24h = it)) }
+        }
+
+        Section("Severe weather alerts (US)", if (settings.alerts) "On" else "Off", alertsOpen, { alertsOpen = !alertsOpen }) {
+            Choice(listOf("On" to true, "Off" to false), settings.alerts) { onChange(settings.copy(alerts = it)) }
+        }
+
+        Spacer(Modifier.height(4.dp))
+        T("Weather data by Open-Meteo.com (CC BY 4.0). Alerts from the US National Weather Service. Your location is only sent to them to get your forecast.", 12.sp, look.subtle)
+    }
+}
+
+/** A settings section: a header showing its current value, which opens to show its controls. */
+@Composable
+private fun Section(title: String, summary: String, open: Boolean, onToggle: () -> Unit, content: @Composable () -> Unit) {
+    Column(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(look.skin.corner.dp.coerceAtMost(16.dp))).background(look.card),
+    ) {
+        Row(
+            Modifier.fillMaxWidth().clickable(onClick = onToggle).padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                T(look.label(title), 15.sp, weight = FontWeight.Medium)
+                if (!open) T(summary, 13.sp, look.subtle, maxLines = 1)
+            }
+            Chevron(open)
+        }
+        AnimatedVisibility(open) {
+            Column(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                content()
+            }
+        }
+    }
+}
+
+@Composable
+private fun Chevron(open: Boolean) {
+    val turn by animateFloatAsState(if (open) 90f else 0f, label = "chevron")
+    T("›", 22.sp, look.subtle, modifier = Modifier.rotate(turn))
+}
+
+/** One group of skins in the picker, opened or closed by its header. */
+@Composable
+private fun SkinGroup(name: String, skins: List<Skin>, settings: Settings, onChange: (Settings) -> Unit, startOpen: Boolean) {
+    var open by rememberSaveable(name) { mutableStateOf(startOpen) }
+    Row(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).clickable { open = !open }.padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        T(look.label(name), 13.sp, look.subtle, modifier = Modifier.weight(1f))
+        T("${skins.size}", 13.sp, look.subtle)
+        Spacer(Modifier.width(8.dp))
+        Chevron(open)
+    }
+    AnimatedVisibility(open) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            val dark = isSystemInDarkTheme()
+            skins.chunked(2).forEach { row ->
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    row.forEach { skin -> SkinCard(skin, skin.palette(dark), skin.id == settings.skin) { onChange(settings.copy(skin = skin.id)) } }
+                    if (row.size == 1) Spacer(Modifier.weight(1f))
                 }
             }
         }
-        T(look.label("Temperature"), 13.sp, look.subtle)
-        Choice(listOf("°F" to TempUnit.F, "°C" to TempUnit.C), settings.tempUnit) { onChange(settings.copy(tempUnit = it)) }
-        T(look.label("Wind"), 13.sp, look.subtle)
-        Choice(WindUnit.entries.map { it.label to it }, settings.windUnit) { onChange(settings.copy(windUnit = it)) }
-        T(look.label("Clock"), 13.sp, look.subtle)
-        Choice(listOf("12 hour" to false, "24 hour" to true), settings.use24h) { onChange(settings.copy(use24h = it)) }
-        T(look.label("Severe weather alerts (US)"), 13.sp, look.subtle)
-        Choice(listOf("On" to true, "Off" to false), settings.alerts) { onChange(settings.copy(alerts = it)) }
-        T("Weather data by Open-Meteo.com (CC BY 4.0). Alerts from the US National Weather Service. Your location is only sent to them to get your forecast.", 12.sp, look.subtle)
+    }
+}
+
+@Composable
+private fun RowScope.SkinCard(skin: Skin, p: Palette, picked: Boolean, onPick: () -> Unit) {
+    CompositionLocalProvider(LocalLook provides Look(skin, p)) {
+        Column(
+            Modifier.weight(1f).clip(RoundedCornerShape(16.dp))
+                .background(Color(p.bgTop))
+                .border(if (picked) 3.dp else 1.dp, if (picked) Color(p.accent) else Color(p.subtle).copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+                .clickable(onClick = onPick).padding(14.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                WeatherIcon(2, true, 32.dp)
+                Spacer(Modifier.width(8.dp))
+                T("72°", 24.sp, weight = FontWeight.Light)
+            }
+            Spacer(Modifier.height(6.dp))
+            T(look.label(skin.name), 14.sp, weight = FontWeight.Medium, maxLines = 1)
+        }
     }
 }
 
