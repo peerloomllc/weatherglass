@@ -13,7 +13,7 @@ import kit  # noqa: E402
 
 kit.setup()  # first, since it clears the scene and its materials
 
-K, OY = 0.52, 0.12  # weather scale and lift inside the jar
+K, OY = 0.52, 0.12  # weather scale and lift inside the jar (see kit.Plain)
 
 
 def rounded_rect(x0, y0, x1, y1, r, steps=10):
@@ -57,58 +57,6 @@ def jar():
     kit.stroke(b, kit.flat("#FFFFFF", 0.6), [(-0.48, 0.62), (-0.42, 0.68)], 0.03, 0.8, False, "shine")
 
 
-def t(x, y, s=1.0):
-    return x * K, y * K + OY, s * K
-
-
-class Terrarium(kit.Style):
-    def sun(self, c, x, y, s, z):
-        x, y, s = t(x, y, s)
-        for i in range(10):
-            a = 2 * math.pi * i / 10
-            kit.poly(c, kit.flat("#F5A93B"), kit.capsule_pts(x + 0.68 * s * math.cos(a), y + 0.68 * s * math.sin(a),
-                                                             0.22 * s, 0.1 * s, a), z, "ray")
-        kit.disc(c, kit.flat("#F9C74F"), x, y, 0.48 * s, z, "sun")
-
-    def moon(self, c, x, y, s, z):
-        x, y, s = t(x, y, s)
-        kit.poly(c, kit.flat("#E9C55A"), kit.crescent_pts(x, y, 0.55 * s), z, "moon")
-
-    def star(self, c, x, y, r, z):
-        x, y, r = t(x, y, r)
-        kit.poly(c, kit.flat("#F9C74F"), kit.star_pts(x, y, r * 1.5, 4, 0.3), z, "star")
-
-    def cloud(self, c, x, y, s, z, dark):
-        x, y, s = t(x, y, s)
-        low, top = ("#6F7C8C", "#8E9BAB") if dark else ("#C9D6E0", "#FFFFFF")
-        kit.poly(c, kit.flat(low), kit.cloud_outline(x, y, s), z, "cloud")
-        kit.poly(c, kit.flat(top), kit.cloud_outline(x, y + 0.04 * s, s, 0.9), z, "cloud")
-
-    def raindrop(self, c, x, y, z):
-        x, y, _ = t(x, y)
-        kit.poly(c, kit.flat("#4A90D9"), kit.drop_pts(x, y, 0.055, 0.25), z, "drop")
-
-    def drizzle(self, c, x, y, z):
-        x, y, _ = t(x, y)
-        kit.disc(c, kit.flat("#4A90D9"), x, y, 0.03, z, "drop")
-
-    def flake(self, c, x, y, r, z):
-        x, y, r = t(x, y, r)
-        for arm in kit.flake_arms(x, y, r * 1.2 + 0.012, 0.055):
-            kit.poly(c, kit.flat("#8FB3CC"), arm, z, "edge")
-        for arm in kit.flake_arms(x, y, r * 1.2, 0.03):
-            kit.poly(c, kit.flat("#FFFFFF"), arm, z, "flake")
-
-    def fog(self, c, bars, z):
-        for x, y, w in bars:
-            x, y, w = t(x, y, w)
-            kit.poly(c, kit.flat("#9FB4C4", 0.85), kit.capsule_pts(x, y, w, 0.1), z, "fog")
-
-    def bolt(self, c, x, y, s, z):
-        x, y, s = t(x, y, s)
-        kit.poly(c, kit.flat("#F9C74F"), kit.bolt_pts(x, y, s, 1.2), z, "bolt")
-
-
 jar()
-kit.build(Terrarium())
+kit.build(kit.Plain(K, OY))
 kit.save()
