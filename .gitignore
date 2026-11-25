@@ -7,3 +7,5 @@ local.properties
 captures/
 TODO.md
 DONE.md
+art/out/
+*.blend1
