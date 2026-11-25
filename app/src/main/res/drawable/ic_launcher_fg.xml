@@ -1,0 +1,6 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+  <!-- An old weatherglass: a round glass bulb with a long neck. -->
+  <path android:strokeColor="#FFF5F5F5" android:strokeWidth="4" android:strokeLineCap="round" android:strokeLineJoin="round"
+      android:pathData="M54,34a14,14 0,1 1,0 28a14,14 0,1 1,0 -28zM54,62V78M46,78H62"/>
+  <path android:fillColor="#FFF5F5F5" android:pathData="M54,42a6,6 0,1 1,0 12a6,6 0,1 1,0 -12z"/>
+</vector>
