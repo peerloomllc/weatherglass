@@ -336,6 +336,39 @@ def stroke(c, m, pts, w, z=0.0, closed=True, name="line"):
     return put(o, m, c)
 
 
+def dashed(c, m, pts, w, dash, gap, z=0.0, closed=True, name="dash"):
+    """A dashed line through the points: dashes of length "dash" with
+    "gap" between them."""
+    path = pts + pts[:1] if closed else pts
+    pieces, cur, pos, on = [], [path[0]], 0.0, True
+    for (x0, y0), (x1, y1) in zip(path, path[1:]):
+        d = math.hypot(x1 - x0, y1 - y0)
+        t = 0.0
+        while d - t > 1e-9:
+            left = (dash if on else gap) - pos
+            step = min(left, d - t)
+            t += step
+            pos += step
+            p = (x0 + (x1 - x0) * t / d, y0 + (y1 - y0) * t / d)
+            if on:
+                cur.append(p)
+            if pos >= (dash if on else gap) - 1e-9:
+                if on and len(cur) > 1:
+                    pieces.append(cur)
+                on, pos, cur = not on, 0.0, [p]
+    if on and len(cur) > 1:
+        pieces.append(cur)
+    for piece in pieces:
+        stroke(c, m, piece, w, z, False, name)
+
+
+def sector_pts(x, y, r, a0, a1, steps=48):
+    """A slice of a circle from angle a0 to a1 (radians), point at (x, y).
+    a1 - a0 = pi gives a half circle."""
+    return [(x, y)] + [(x + r * math.cos(a0 + (a1 - a0) * i / steps), y + r * math.sin(a0 + (a1 - a0) * i / steps))
+                       for i in range(steps + 1)]
+
+
 def circle_pts(x, y, r, steps=96):
     return [(x + r * math.cos(2 * math.pi * i / steps), y + r * math.sin(2 * math.pi * i / steps)) for i in range(steps)]
 
