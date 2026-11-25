@@ -21,7 +21,7 @@ ships 300px WebP pictures (see `install_skin.sh`).
 | `build_teletext.py` | Block graphics on a 24 x 24 grid, installed with hard edges like 8-bit |
 | `render_skin.py` | Renders a scene into 18 transparent PNGs in `out/<skin>/` |
 | `install_skin.sh` | Turns those PNGs into WebP in the app (`res/drawable-nodpi/skin_<skin>_*.webp`) |
-| `render_all.sh` | Both steps: `art/render_all.sh paper` |
+| `render_all.sh` | Both steps: `art/render_all.sh paper`. For Terrarium, dice, gauge and town it also makes the small-size set |
 
 Rendering all 18 takes about 90 seconds on the GPU for Paper cut, about 40
 for Retro-future and a few seconds for 8-bit.
@@ -37,6 +37,15 @@ for Retro-future and a few seconds for 8-bit.
   that reflect a pink and cyan sky, and neon rain and lightning with a soft
   glow. Overlapping glows sit at slightly different heights, since Cycles
   shades two overlapping flat shapes at the same height black.
+
+## Small-size pictures
+
+Terrarium, Tabletop dice, Round gauge and Isometric town draw the weather
+inside a jar, die, dial or town, which gets hard to read in small icons. So
+they have a second set, `skin_<skin>_<weather>_<day|night>_mini`, rendered
+with `render_skin.py --mini` (the `base` collection and the gauge pointer
+hidden). The app uses a skin's mini pictures for any icon under 40dp
+(`MINI_BELOW_DP` in `skin/Skin.kt`).
 
 ## How a scene is laid out
 

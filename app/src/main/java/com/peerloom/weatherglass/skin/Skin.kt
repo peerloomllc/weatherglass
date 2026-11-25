@@ -228,8 +228,19 @@ fun builtinIcon(code: Int, isDay: Boolean): Int = when (conditionFor(code)) {
 // Returns the drawable and whether it is skin art (shown as is) or the
 // built-in line icon (tinted with the skin's icon color).
 @SuppressLint("DiscouragedApi")
-fun iconFor(context: Context, skin: Skin, code: Int, isDay: Boolean): Pair<Int, Boolean> {
+/** Icons smaller than this use a skin's "_mini" pictures when it has them. */
+const val MINI_BELOW_DP = 40
+
+/**
+ * The picture for a weather code in a skin, and whether it is the skin's own
+ * art (true) or a built-in line icon to tint (false). Skins that draw the
+ * weather inside something (a jar, a die, a dial) also ship a "_mini" set
+ * with just the weather, used when [small] is true so it stays readable.
+ */
+fun iconFor(context: Context, skin: Skin, code: Int, isDay: Boolean, small: Boolean = false): Pair<Int, Boolean> {
     val name = "skin_${skin.id}_${artKey(conditionFor(code))}_${if (isDay) "day" else "night"}"
-    val art = context.resources.getIdentifier(name, "drawable", context.packageName)
+    val res = context.resources
+    val art = (if (small) res.getIdentifier(name + "_mini", "drawable", context.packageName) else 0)
+        .takeIf { it != 0 } ?: res.getIdentifier(name, "drawable", context.packageName)
     return if (art != 0) art to true else builtinIcon(code, isDay) to false
 }

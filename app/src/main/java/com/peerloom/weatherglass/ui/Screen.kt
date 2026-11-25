@@ -64,6 +64,7 @@ import com.peerloom.weatherglass.data.rainTiming
 import com.peerloom.weatherglass.data.temp
 import com.peerloom.weatherglass.data.tempText
 import com.peerloom.weatherglass.data.windText
+import com.peerloom.weatherglass.skin.MINI_BELOW_DP
 import com.peerloom.weatherglass.skin.iconFor
 import kotlin.math.roundToInt
 
@@ -82,7 +83,7 @@ fun T(
 
 @Composable
 fun WeatherIcon(code: Int, isDay: Boolean, size: Dp) {
-    val (res, isArt) = iconFor(LocalContext.current, look.skin, code, isDay)
+    val (res, isArt) = iconFor(LocalContext.current, look.skin, code, isDay, size < MINI_BELOW_DP.dp)
     Image(
         painterResource(res), contentDescription = conditionLabel(code, isDay), modifier = Modifier.size(size),
         colorFilter = if (isArt) null else ColorFilter.tint(look.icon),
