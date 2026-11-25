@@ -1,7 +1,8 @@
 # Skin art
 
 Each skin can have its own picture for every weather type, made in Blender.
-Pictures a skin does not have fall back to the built-in line icons.
+Pictures a skin does not have fall back to the built-in line icons. The app
+ships 300px WebP pictures (see `install_skin.sh`).
 
 ## Files
 
@@ -13,7 +14,9 @@ Pictures a skin does not have fall back to the built-in line icons.
 | `build_retro.py` | Builds the starter Retro-future scene (overwrites `retro.blend`) |
 | `kit.py` | Shared drawing helpers and the common layout for flat skins |
 | `build_kurosawa.py`, `build_anime.py`, `build_ukiyoe.py`, `build_ink.py`, `build_crt.py`, `build_vapor.py`, `build_lcd.py`, `build_bauhaus.py`, `build_deco.py`, `build_riso.py`, `build_blueprint.py`, `build_watercolor.py`, `build_chalk.py`, `build_barometer.py`, `build_journal.py`, `build_noir.py`, `build_lofi.py` | Flat skins built with `kit.py` |
-| `build_terrarium.py` | Flat skin whose jar sits in the always-on `base` collection, with the weather drawn smaller inside it |
+| `build_terrarium.py`, `build_dice.py`, `build_gauge.py` | Flat skins with a jar, die or dial in the always-on `base` collection and the weather drawn smaller inside it by `kit.Plain` |
+| `build_rpg.py` | 16-bit pixel art on a 48 x 48 grid, installed with hard edges |
+| `build_iso.py` | Lit 3D town in `base`, with `kit.Plain` symbols turned toward an isometric camera |
 | `build_clay.py`, `build_felt.py` | Lit 3D skins built with `kit.py` and `kit.lit()`. Clay takes about 2 minutes to render |
 | `build_teletext.py` | Block graphics on a 24 x 24 grid, installed with hard edges like 8-bit |
 | `render_skin.py` | Renders a scene into 18 transparent PNGs in `out/<skin>/` |

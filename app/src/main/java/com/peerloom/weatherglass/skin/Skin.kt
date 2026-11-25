@@ -172,10 +172,31 @@ object Skins {
         corner = 22,
     )
 
+    val rpg = Skin(
+        id = "rpg", name = "16-bit RPG",
+        light = Palette(0xFF1B2A6B, 0xFF0E1640, 0xFF2A3D8F, 0xFFFFFFFF, 0xFFB8C4F0, 0xFFFFD34D, 0xFFFFFFFF),
+        font = Font.MONO, corner = 6,
+    )
+    val dice = Skin(
+        id = "dice", name = "Tabletop dice",
+        light = Palette(0xFFEFE3C6, 0xFFE3D2AC, 0xFFF6EDD8, 0xFF3B2A1A, 0xFF7D6A52, 0xFFB23A48, 0xFF3B2A1A),
+        font = Font.SERIF, corner = 8,
+    )
+    val iso = Skin(
+        id = "iso", name = "Isometric town",
+        light = Palette(0xFFDDEBF5, 0xFFF1F5EC, 0xB3FFFFFF, 0xFF22313F, 0xFF62727F, 0xFF4E9A45, 0xFF22313F),
+        corner = 16,
+    )
+    val gauge = Skin(
+        id = "gauge", name = "Round gauge",
+        light = Palette(0xFF20242B, 0xFF15181D, 0xFF2A2F38, 0xFFF2EEE6, 0xFF9AA3AE, 0xFFE8B04A, 0xFFF2EEE6),
+        corner = 12,
+    )
+
     val all = listOf(
         mono, paper, pixel, retro, kurosawa, anime, ukiyoe, ink, crt, vapor, lcd, teletext,
         bauhaus, deco, riso, blueprint, watercolor, clay, felt, chalk,
-        barometer, journal, noir, lofi, terrarium,
+        barometer, journal, noir, lofi, terrarium, rpg, dice, iso, gauge,
     )
     fun byId(id: String?) = all.firstOrNull { it.id == id } ?: mono
 }

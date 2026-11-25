@@ -646,3 +646,74 @@ def build(style):
         style.flake(sl, x, y, r, fall_z)
     style.fog(coll("fog"), L["fog"], sun_z)
     style.bolt(coll("bolt"), *L["bolt"], fall_z)
+
+
+class Plain(Style):
+    """Simple friendly weather symbols drawn smaller and moved, for skins
+    that show the weather inside something (a jar, a die, a dial). k is the
+    scale and (ox, oy) the shift. outline, if given, is a color drawn as an
+    even border around every shape, ow its width."""
+
+    def __init__(self, k, oy=0.0, ox=0.0, outline=None, ow=0.02):
+        self.k, self.ox, self.oy, self.outline, self.ow = k, ox, oy, outline, ow
+
+    def t(self, x, y, s=1.0):
+        return x * self.k + self.ox, y * self.k + self.oy, s * self.k
+
+    def fill(self, c, color, pts, z, name, alpha=1.0):
+        if self.outline:
+            stroke(c, flat(self.outline), pts, 2 * self.ow, z, True, "outline")
+        return poly(c, flat(color, alpha), pts, z, name)
+
+    def sun(self, c, x, y, s, z):
+        x, y, s = self.t(x, y, s)
+        for i in range(10):
+            a = 2 * math.pi * i / 10
+            self.fill(c, "#F5A93B", capsule_pts(x + 0.68 * s * math.cos(a), y + 0.68 * s * math.sin(a), 0.22 * s, 0.1 * s, a),
+                      z, "ray")
+        if self.outline:
+            self.fill(c, "#F9C74F", circle_pts(x, y, 0.48 * s), z, "sun")
+        else:
+            disc(c, flat("#F9C74F"), x, y, 0.48 * s, z, "sun")
+
+    def moon(self, c, x, y, s, z):
+        x, y, s = self.t(x, y, s)
+        self.fill(c, "#E9C55A", crescent_pts(x, y, 0.55 * s), z, "moon")
+
+    def star(self, c, x, y, r, z):
+        x, y, r = self.t(x, y, r)
+        self.fill(c, "#F9C74F", star_pts(x, y, r * 1.5, 4, 0.3), z, "star")
+
+    def cloud(self, c, x, y, s, z, dark):
+        x, y, s = self.t(x, y, s)
+        low, top = ("#6F7C8C", "#8E9BAB") if dark else ("#C9D6E0", "#FFFFFF")
+        self.fill(c, low, cloud_outline(x, y, s), z, "cloud")
+        poly(c, flat(top), cloud_outline(x, y + 0.04 * s, s, 0.9), z, "cloud")
+
+    def raindrop(self, c, x, y, z):
+        x, y, _ = self.t(x, y)
+        self.fill(c, "#4A90D9", drop_pts(x, y, 0.105 * self.k, 0.25), z, "drop")
+
+    def drizzle(self, c, x, y, z):
+        x, y, _ = self.t(x, y)
+        if self.outline:
+            self.fill(c, "#4A90D9", circle_pts(x, y, 0.058 * self.k, 32), z, "drop")
+        else:
+            disc(c, flat("#4A90D9"), x, y, 0.058 * self.k, z, "drop")
+
+    def flake(self, c, x, y, r, z):
+        x, y, r = self.t(x, y, r)
+        k = self.k
+        for arm in flake_arms(x, y, r * 1.2 + 0.023 * k, 0.106 * k):
+            self.fill(c, "#8FB3CC", arm, z, "edge")
+        for arm in flake_arms(x, y, r * 1.2, 0.058 * k):
+            poly(c, flat("#FFFFFF"), arm, z, "flake")
+
+    def fog(self, c, bars, z):
+        for x, y, w in bars:
+            x, y, w = self.t(x, y, w)
+            self.fill(c, "#9FB4C4", capsule_pts(x, y, w, 0.19 * self.k), z, "fog", 0.85)
+
+    def bolt(self, c, x, y, s, z):
+        x, y, s = self.t(x, y, s)
+        self.fill(c, "#F9C74F", bolt_pts(x, y, s, 1.2), z, "bolt")
