@@ -32,6 +32,12 @@ attention.
 9. **Settings:** °F or °C, wind units, 12 or 24 hour time, skin, alerts on
    or off. One screen.
 
+## Widget options (added 2026-11-25)
+
+At least one widget style shows the date and time alongside the weather.
+People can choose what each widget shows (clock, date, place, high and low,
+rain chance, next hours, next days), the way many weather apps allow.
+
 ## Later (version 2 and on)
 
 - Rain radar map. The heaviest feature to build, and the data costs money
