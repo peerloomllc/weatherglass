@@ -135,6 +135,7 @@ fun SettingsSheet(settings: Settings, onDismiss: () -> Unit, onChange: (Settings
     var skinOpen by rememberSaveable { mutableStateOf(false) }
     var unitsOpen by rememberSaveable { mutableStateOf(false) }
     var alertsOpen by rememberSaveable { mutableStateOf(false) }
+    var motionOpen by rememberSaveable { mutableStateOf(false) }
     Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         T(look.label("Settings"), 20.sp, weight = FontWeight.Medium)
 
@@ -160,6 +161,11 @@ fun SettingsSheet(settings: Settings, onDismiss: () -> Unit, onChange: (Settings
 
         Section("Severe weather alerts (US)", if (settings.alerts) "On" else "Off", alertsOpen, { alertsOpen = !alertsOpen }) {
             Choice(listOf("On" to true, "Off" to false), settings.alerts) { onChange(settings.copy(alerts = it)) }
+        }
+
+        Section("Opening animation", if (settings.animate) "On" else "Off", motionOpen, { motionOpen = !motionOpen }) {
+            Choice(listOf("On" to true, "Off" to false), settings.animate) { onChange(settings.copy(animate = it)) }
+            T("Plays once when the app opens. Also stays off if animations are turned off in Android's settings.", 12.sp, look.subtle)
         }
 
         Spacer(Modifier.height(4.dp))

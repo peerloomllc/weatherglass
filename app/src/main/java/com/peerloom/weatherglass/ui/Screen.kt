@@ -1,5 +1,6 @@
 package com.peerloom.weatherglass.ui
 
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -109,6 +110,7 @@ fun Card(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
 @Composable
 fun WeatherScreen(
     state: UiState,
+    openKey: Int,
     onRefresh: () -> Unit,
     onSelect: (Int) -> Unit,
     onRemove: (Int) -> Unit,
@@ -124,7 +126,7 @@ fun WeatherScreen(
             Welcome(onUseLocation = onUseLocation, onPickCity = { showPlaces = true })
         } else {
             PullToRefreshBox(isRefreshing = state.refreshing, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
-                Forecast(state, onPlaces = { showPlaces = true }, onSettings = { showSettings = true })
+                Forecast(state, openKey, onPlaces = { showPlaces = true }, onSettings = { showSettings = true })
             }
         }
     }
@@ -163,7 +165,10 @@ fun Button(text: String, primary: Boolean = false, modifier: Modifier = Modifier
 }
 
 @Composable
-private fun Forecast(state: UiState, onPlaces: () -> Unit, onSettings: () -> Unit) {
+private fun Forecast(state: UiState, openKey: Int, onPlaces: () -> Unit, onSettings: () -> Unit) {
+    // Which opening the animation last played for, so scrolling or a refresh
+    // does not replay it.
+    var played by remember { mutableIntStateOf(0) }
     val s = state.settings
     val place = state.places.getOrNull(state.selected)
     val f = state.forecast
@@ -193,7 +198,7 @@ private fun Forecast(state: UiState, onPlaces: () -> Unit, onSettings: () -> Uni
         }
         val now = placeNow(f.utcOffsetSeconds)
         items(f.alerts) { AlertCard(it) }
-        item { Now(f, s) }
+        item { Now(f, s, play = s.animate && played != openKey, onPlayed = { played = openKey }) }
         val snow = conditionFor(f.current.code) == Condition.SNOW
         rainTiming(f.quarters, now, snow)?.let { line -> item { Card { T(line, 16.sp, weight = FontWeight.Medium) } } }
         item { Hourly(f, s, now) }
@@ -226,11 +231,11 @@ private fun AlertCard(a: Alert) {
 }
 
 @Composable
-private fun Now(f: Forecast, s: Settings) {
+private fun Now(f: Forecast, s: Settings, play: Boolean, onPlayed: () -> Unit) {
     val c = f.current
     val today = f.days.firstOrNull()
     Column(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        WeatherIcon(c.code, c.isDay, 120.dp)
+        OpeningIcon(c.code, c.isDay, 120.dp, play, onPlayed)
         T(tempText(c.tempC, s.tempUnit), 96.sp, weight = FontWeight.Light)
         T(look.label(conditionLabel(c.code, c.isDay)), 20.sp)
         Spacer(Modifier.height(4.dp))

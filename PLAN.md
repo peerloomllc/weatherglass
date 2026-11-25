@@ -147,6 +147,18 @@ How skins get made:
 - Radar: decide after version 1 is in daily use.
 - Name: Weatherglass (an old word for a barometer).
 
+## Opening animation (decided 2026-11-25)
+
+- Only the big weather icon animates. The rest of the screen shows at once,
+  so nothing waits on it.
+- Plays once, about 1.5 seconds, each time the app opens, then rests.
+- Every skin gets motion in code: the picture rises or drifts in, and rain or
+  snow falls in the skin's own colors. A few showcase skins also get a short
+  Blender clip.
+- On by default, with an off switch in Settings. Stays off when Android's
+  "remove animations" setting is on.
+- Widgets cannot play animations, so this is the app only.
+
 ## Open questions
 
 - Confirm with Open-Meteo that a free, ad-free app fits their free tier.

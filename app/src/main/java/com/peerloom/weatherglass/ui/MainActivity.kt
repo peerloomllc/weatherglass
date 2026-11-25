@@ -1,5 +1,7 @@
 package com.peerloom.weatherglass.ui
 
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableIntStateOf
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -26,6 +28,17 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private val vm: MainViewModel by viewModels()
+
+    // Counts openings, so the opening animation plays once per opening. It
+    // moves on when the app goes to the background, so the screen is already
+    // set to animate when it comes back and the finished icon never flashes
+    // first.
+    private var opens by mutableIntStateOf(1)
+
+    override fun onStop() {
+        super.onStop()
+        opens++
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +74,7 @@ class MainActivity : ComponentActivity() {
             CompositionLocalProvider(LocalLook provides lk) {
                 WeatherScreen(
                     state = state,
+                    openKey = opens,
                     onRefresh = { vm.refresh(force = true) },
                     onSelect = vm::select,
                     onRemove = vm::removePlace,
