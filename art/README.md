@@ -49,8 +49,9 @@ hidden). The app uses a skin's mini pictures for any icon under 40dp
 
 ## Opening clips
 
-Tabletop dice, Claymation and Retro-future play a short clip when the app
-opens (every other skin gets motion in code). Each clip ends exactly on the
+Tabletop dice, Claymation, Retro-future, Kurosawa and Round gauge play a
+short clip when the app opens. Minimal Mono's line icons draw themselves on
+in code. Other skins just show their picture. Each clip ends exactly on the
 still picture.
 
 ```
@@ -59,7 +60,9 @@ art/install_clip.sh dice
 ```
 
 `animate_clip.py` styles: `smooth` (Retro-future, neon flares), `clay`
-(stop-motion with a squash on landing) and `dice` (the die rolls through its
+(stop-motion with a squash on landing), `film` (Kurosawa: flickers up from
+black with scratches, rain lashing down), `gauge` (the needle swings in and
+settles) and `dice` (the die rolls through its
 numbers and lands on 1 for rain and thunderstorms, 20 for clear skies and 10
 otherwise, then the weather pops up). Clips go to `res/raw/clip_<skin>_*.webp`
 at 240px.

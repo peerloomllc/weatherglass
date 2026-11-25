@@ -14,6 +14,11 @@
 #           tumbles, and lands on 1 for rain and thunderstorms, 20 for clear
 #           skies and 10 for anything else. The number shrinks away and the
 #           weather pops up on its face
+#   film    Kurosawa: an old projector starting up. The picture flickers up
+#           from black, the frame jumps, scratches flash across it, and rain
+#           comes down hard
+#   gauge   Round gauge: the dial stays put and its needle swings in from the
+#           far end, overshoots and settles on today's reading
 #
 # Every element collection is moved as one piece by an empty placed at its
 # middle. The last frame has every empty back at rest, so it matches the
@@ -32,6 +37,7 @@ from render_skin import ALL, PARTS  # noqa: E402
 
 FRAMES = 18
 DICE_FRAMES = 28  # the dice clip runs longer so the rolled number can be read
+GAUGE_FRAMES = 24  # room for the needle to wobble before it settles
 
 # What each element does on its way in.
 ROLE = {
@@ -65,6 +71,14 @@ def pose(role, f, style):
     """(dx, dy, rot_z, sx, sy) for an element at frame f; all zero/one at rest."""
     dx = dy = rot = 0.0
     sx = sy = 1.0
+    if style == "gauge":
+        return 0.0, 0.0, 0.0, 1.0, 1.0  # only the needle moves
+    if style == "film":
+        # Everything sits still while the frame jumps, except the rain.
+        if role != "fall":
+            return (0.0, JUMP.get(f, 0.0), 0.0, 1.0, 1.0)
+        k = 1 - span(f, 3, 15)
+        return (0.0, 0.6 * k + JUMP.get(f, 0.0), 0.0, 1.0, 1.0)
     if style == "dice":
         # The weather pops up once the rolled number has shrunk away.
         s = overshoot(f, SHRINK_END, DICE_FRAMES, 1.25)
@@ -196,6 +210,71 @@ def show_roll(big, target):
     o.keyframe_insert("hide_render", frame=SHRINK_END + 1)
 
 
+# Film: how far the frame jumps on the first few frames, as the projector
+# catches the film.
+JUMP = {2: 0.06, 3: -0.04, 5: 0.03, 7: -0.02}
+FLICKER = [0.0, 0.12, 0.45, 0.2, 0.75, 0.55, 1.1, 0.85, 1.05, 0.92, 1.03, 0.97]
+
+
+def film_flicker():
+    """The picture flickers up from black: every color's brightness is keyed
+    frame by frame, ending at its normal value."""
+    for m in bpy.data.materials:
+        if not m.use_nodes:
+            continue
+        for n in m.node_tree.nodes:
+            if n.type == "EMISSION":
+                rest = n.inputs["Strength"].default_value
+                for f in range(1, FRAMES + 1):
+                    k = FLICKER[f - 1] if f <= len(FLICKER) else 1.0
+                    n.inputs["Strength"].default_value = rest * k
+                    n.inputs["Strength"].keyframe_insert("default_value", frame=f)
+                n.inputs["Strength"].default_value = rest
+
+
+def film_scratches():
+    """Thin pale scratches that flash on a few early frames."""
+    import kit  # noqa: E402
+    c = bpy.data.collections.new("film_scratches")
+    bpy.context.scene.collection.children.link(c)
+    for x, frames in ((-0.42, (2, 5, 8)), (0.18, (3, 4, 9)), (0.55, (6, 10))):
+        o = kit.poly(c, kit.flat("#ECE8E0", 0.7), kit.capsule_pts(x, 0.0, 2.2, 0.012, 1.5708), 0.9, "scratch")
+        o.hide_render = True
+        o.keyframe_insert("hide_render", frame=1)
+        for f in frames:
+            o.hide_render = False
+            o.keyframe_insert("hide_render", frame=f)
+            o.hide_render = True
+            o.keyframe_insert("hide_render", frame=f + 1)
+
+
+def gauge_needles(cols):
+    """Each pointer swings in from the far end of the dial, overshoots and
+    settles. The pointers sit in the weather collections (one per picture)."""
+    for c in cols:
+        ptr = [o for o in c.objects if o.name.startswith("pointer")]
+        if not ptr:
+            continue
+        e = bpy.data.objects.new("needle_" + c.name, None)
+        e.location = (0, 0, 0)
+        c.objects.link(e)
+        bpy.context.view_layer.update()
+        for o in ptr:
+            o.parent = e
+            o.matrix_parent_inverse = e.matrix_world.inverted()
+        # Where the pointer rests, as an angle round the dial's middle.
+        mid = sum((o.matrix_world.translation for o in ptr), Vector()) / len(ptr)
+        rest = math.atan2(mid.y, mid.x)
+        # Start from whichever end of the dial is further away.
+        far = math.radians(165) if rest < math.radians(90) else math.radians(15)
+        swing = far - rest
+        for f in range(1, FRAMES + 1):
+            t = (f - 1) / (FRAMES - 1)
+            k = 0.0 if f == FRAMES else math.exp(-5.5 * t) * math.cos(2.4 * math.pi * t)
+            e.rotation_euler = (0, 0, swing * k)
+            e.keyframe_insert("rotation_euler", frame=f)
+
+
 def pulse_glows():
     """Retro-future: neon dims in, flares, then settles to its normal brightness."""
     for m in bpy.data.materials:
@@ -218,13 +297,15 @@ def main():
     global FRAMES
     if style == "dice":
         FRAMES = DICE_FRAMES
+    if style == "gauge":
+        FRAMES = GAUGE_FRAMES
     scene.frame_start, scene.frame_end = 1, FRAMES
     scene.render.fps = 12
     step = 2 if style == "clay" else 1
     cols = bpy.data.collections
 
     for name in ALL:
-        if name not in cols:
+        if name not in cols or style == "gauge":
             continue
         e = holder(cols[name])
         if e is None:
@@ -242,6 +323,11 @@ def main():
             dice_roll(e)
     if style == "smooth":
         pulse_glows()
+    if style == "film":
+        film_flicker()
+        film_scratches()
+    if style == "gauge":
+        gauge_needles([cols[n] for n in ALL if n in cols])
 
     for weather, (day, night) in PARTS.items():
         for when, shown in (("day", day), ("night", night)):
