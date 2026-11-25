@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Live clock for the widgets. TextClock ticks on its own, so the widget
+     never has to wake up every minute to redraw the time. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+    <TextClock
+        android:id="@+id/clock_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="serif"
+        android:includeFontPadding="false"
+        android:maxLines="1" />
+    <TextClock
+        android:id="@+id/clock_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="serif"
+        android:maxLines="1"
+        android:format12Hour="EEE, MMM d"
+        android:format24Hour="EEE, MMM d" />
+</LinearLayout>

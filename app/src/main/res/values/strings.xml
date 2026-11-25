@@ -3,5 +3,6 @@
     <string name="widget_small">Now</string>
     <string name="widget_medium">Now and next hours</string>
     <string name="widget_large">Now, hours and days</string>
+    <string name="widget_clock">Clock and weather</string>
     <string name="widget_loading">Loading weather…</string>
 </resources>
