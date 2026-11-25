@@ -1,6 +1,7 @@
 package com.peerloom.weatherglass.ui
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -45,6 +46,18 @@ class MainActivity : ComponentActivity() {
                 if (ok) vm.addCurrentLocation()
             }
             val askNotify = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+            // Alerts are on by default, so ask for notifications once, right
+            // after the first place is added. Never again after that.
+            val hasPlace = state.places.isNotEmpty()
+            LaunchedEffect(hasPlace) {
+                val prefs = getSharedPreferences("weatherglass", MODE_PRIVATE)
+                if (hasPlace && state.settings.alerts && !prefs.getBoolean("askedNotify", false) &&
+                    checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    prefs.edit().putBoolean("askedNotify", true).apply()
+                    askNotify.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
             CompositionLocalProvider(LocalLook provides lk) {
                 WeatherScreen(
                     state = state,
