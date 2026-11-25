@@ -10,6 +10,7 @@ data class Settings(
     val use24h: Boolean,
     val skin: String,
     val alerts: Boolean,
+    val animate: Boolean = true,
 )
 
 // Small key-value settings plus the saved places list. One SharedPreferences
@@ -26,6 +27,7 @@ class Prefs(context: Context) {
             use24h = p.getBoolean("24h", !usLocale()),
             skin = p.getString("skin", "mono") ?: "mono",
             alerts = p.getBoolean("alerts", true),
+            animate = p.getBoolean("animate", true),
         )
         set(s) {
             p.edit()
@@ -34,6 +36,7 @@ class Prefs(context: Context) {
                 .putBoolean("24h", s.use24h)
                 .putString("skin", s.skin)
                 .putBoolean("alerts", s.alerts)
+                .putBoolean("animate", s.animate)
                 .apply()
         }
 
