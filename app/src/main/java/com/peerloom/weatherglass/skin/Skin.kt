@@ -146,9 +146,36 @@ object Skins {
         corner = 4,
     )
 
+    val barometer = Skin(
+        id = "barometer", name = "Ship's barometer",
+        light = Palette(0xFF13233A, 0xFF0E1A2B, 0xFF1A2E4A, 0xFFEFE6D2, 0xFF9FA8B5, 0xFFC9A15B, 0xFFC9A15B),
+        font = Font.SERIF, corner = 10,
+    )
+    val journal = Skin(
+        id = "journal", name = "Field journal",
+        light = Palette(0xFFF3EAD7, 0xFFEADFC6, 0xFFF8F1E2, 0xFF4A3526, 0xFF8A7560, 0xFF8C5A2B, 0xFF4A3526),
+        font = Font.SERIF, corner = 2,
+    )
+    val noir = Skin(
+        id = "noir", name = "Noir",
+        light = Palette(0xFF0B0B0B, 0xFF1C1C1C, 0x1AFFFFFF, 0xFFF0F0F0, 0xFF8C8C8C, 0xFFFFFFFF, 0xFFF0F0F0),
+        font = Font.SERIF, corner = 0, upperLabels = true,
+    )
+    val lofi = Skin(
+        id = "lofi", name = "Lo-fi",
+        light = Palette(0xFF2B2440, 0xFF4A3B5C, 0x26FFFFFF, 0xFFF4E9E1, 0xFFB9A8C4, 0xFFFFB27A, 0xFFF4E9E1),
+        corner = 20,
+    )
+    val terrarium = Skin(
+        id = "terrarium", name = "Terrarium",
+        light = Palette(0xFFE7EFE4, 0xFFD5E3D0, 0xFFF4F8F2, 0xFF24402F, 0xFF6A8573, 0xFF3F7D4E, 0xFF24402F),
+        corner = 22,
+    )
+
     val all = listOf(
         mono, paper, pixel, retro, kurosawa, anime, ukiyoe, ink, crt, vapor, lcd, teletext,
         bauhaus, deco, riso, blueprint, watercolor, clay, felt, chalk,
+        barometer, journal, noir, lofi, terrarium,
     )
     fun byId(id: String?) = all.firstOrNull { it.id == id } ?: mono
 }

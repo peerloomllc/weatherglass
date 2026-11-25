@@ -397,6 +397,16 @@ def sector_pts(x, y, r, a0, a1, steps=48):
                        for i in range(steps + 1)]
 
 
+def wobble(pts, amp=0.008, seed=0.0):
+    """Nudge each point a little, smoothly, so lines look hand drawn."""
+    out = []
+    for i, (x, y) in enumerate(pts):
+        t = i * 0.35 + seed
+        out.append((x + amp * math.sin(t * 1.7) + amp * 0.5 * math.sin(t * 4.1),
+                    y + amp * math.cos(t * 1.3) + amp * 0.5 * math.sin(t * 3.3)))
+    return out
+
+
 def circle_pts(x, y, r, steps=96):
     return [(x + r * math.cos(2 * math.pi * i / steps), y + r * math.sin(2 * math.pi * i / steps)) for i in range(steps)]
 
