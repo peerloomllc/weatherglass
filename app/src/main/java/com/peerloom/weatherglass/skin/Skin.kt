@@ -207,6 +207,15 @@ object Skins {
         bauhaus, deco, riso, blueprint, watercolor, clay, felt, chalk,
         barometer, journal, noir, lofi, terrarium, rpg, dice, iso, gauge,
     )
+    /** The skin picker's groups, in order. Every skin is in exactly one. */
+    val groups = listOf(
+        "Simple" to listOf(mono),
+        "Retro and games" to listOf(pixel, rpg, retro, crt, vapor, lcd, teletext, dice),
+        "Art and print" to listOf(kurosawa, noir, anime, ukiyoe, ink, bauhaus, deco, riso, blueprint),
+        "Hand-made" to listOf(paper, watercolor, clay, felt, chalk, journal),
+        "Places and objects" to listOf(barometer, gauge, terrarium, iso, lofi),
+    )
+
     fun byId(id: String?) = all.firstOrNull { it.id == id } ?: mono
 }
 
