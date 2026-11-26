@@ -136,7 +136,8 @@ How skins get made:
 
 ## Decided (2026-11-25)
 
-- Android only. No iPhone version planned.
+- Android first. An iPhone version comes later, after the Android release
+  (changed 2026-11-25), reusing the skin art and clips.
 - All skins free. Zaps and donations welcome, no paid skins.
 - Tapping a widget opens the app.
 - Tim makes the skin art in Blender.
