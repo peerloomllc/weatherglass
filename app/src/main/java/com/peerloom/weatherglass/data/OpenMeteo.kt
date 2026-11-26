@@ -15,7 +15,7 @@ object OpenMeteo {
         "https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon" +
             "&current=temperature_2m,apparent_temperature,relative_humidity_2m,is_day,weather_code,wind_speed_10m,wind_direction_10m" +
             "&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,is_day" +
-            "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset,uv_index_max" +
+            "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset,uv_index_max,sunshine_duration" +
             "&minutely_15=precipitation&forecast_days=10&forecast_hours=48&forecast_minutely_15=12&timezone=auto"
 
     fun parseForecast(body: String, place: Place, nowMillis: Long = System.currentTimeMillis()): Forecast {
@@ -32,7 +32,8 @@ object OpenMeteo {
                 Hour(h.time[i], h.temp[i] ?: 0.0, h.rainChance[i] ?: 0, h.rain[i] ?: 0.0, h.code[i] ?: 3, (h.isDay[i] ?: 1) == 1)
             },
             days = d.time.indices.map { i ->
-                Day(d.time[i], d.code[i] ?: 3, d.max[i] ?: 0.0, d.min[i] ?: 0.0, d.rainChance[i] ?: 0, d.sunrise[i] ?: "", d.sunset[i] ?: "", d.uv[i] ?: 0.0)
+                Day(d.time[i], d.code[i] ?: 3, d.max[i] ?: 0.0, d.min[i] ?: 0.0, d.rainChance[i] ?: 0, d.sunrise[i] ?: "", d.sunset[i] ?: "", d.uv[i] ?: 0.0,
+                    (d.sun.getOrNull(i) ?: 0.0) / 3600)
             },
             quarters = r.minutely?.let { m -> m.time.indices.map { Quarter(m.time[it], m.rain[it] ?: 0.0) } } ?: emptyList(),
         )
@@ -92,6 +93,7 @@ object OpenMeteo {
         val sunrise: List<String?>,
         val sunset: List<String?>,
         @SerialName("uv_index_max") val uv: List<Double?>,
+        @SerialName("sunshine_duration") val sun: List<Double?> = emptyList(), // seconds
     )
 
     @Serializable

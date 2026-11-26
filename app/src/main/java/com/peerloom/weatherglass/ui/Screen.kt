@@ -302,7 +302,12 @@ private fun Daily(f: Forecast, s: Settings, today: java.time.LocalDate) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     T(dayLabel(d.date, today), 16.sp, modifier = Modifier.width(86.dp), maxLines = 1)
                     WeatherIcon(d.code, true, 28.dp)
-                    T(if (d.rainChance >= 20) "${d.rainChance}%" else "", 12.sp, look.accent, modifier = Modifier.width(40.dp).padding(start = 6.dp))
+                    // Rain chance on wet days, hours of sun on dry ones.
+                    if (d.rainChance >= 20) {
+                        T("${d.rainChance}%", 12.sp, look.accent, modifier = Modifier.width(48.dp).padding(start = 6.dp))
+                    } else {
+                        T(if (d.sunHours >= 0.5) "☀${sunHoursShort(d.sunHours)}" else "", 12.sp, look.subtle, modifier = Modifier.width(48.dp).padding(start = 6.dp), maxLines = 1)
+                    }
                     T(tempText(d.minC, s.tempUnit), 15.sp, look.subtle, modifier = Modifier.width(40.dp))
                     RangeBar(lo, hi, temp(d.minC, s.tempUnit), temp(d.maxC, s.tempUnit), Modifier.weight(1f))
                     T(tempText(d.maxC, s.tempUnit), 15.sp, weight = FontWeight.Medium, modifier = Modifier.width(44.dp).padding(start = 8.dp))
@@ -337,6 +342,10 @@ private fun Details(f: Forecast, s: Settings) {
             add("Rain today" to rainText(todayRain, s.tempUnit))
             if (d.sunrise.isNotEmpty()) add("Sunrise" to clockLabel(d.sunrise, s.use24h))
             if (d.sunset.isNotEmpty()) add("Sunset" to clockLabel(d.sunset, s.use24h))
+            daylightHours(d)?.let { day ->
+                add("Sunshine" to sunHoursShort(d.sunHours).dropLast(1) + " hours")
+                add("Daylight" to hoursMinutes(day))
+            }
         }
     }
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -396,3 +405,21 @@ private fun BigTemp(value: Int) {
         )
     }
 }
+
+/** Hours of sun, rounded to the nearest half hour: "7h", "7.5h". */
+fun sunHoursShort(h: Double): String {
+    val r = Math.round(h * 2) / 2.0
+    return if (r % 1.0 == 0.0) "${r.toInt()}h" else "${r}h"
+}
+
+/** "10 h 38 min" */
+fun hoursMinutes(h: Double): String {
+    val m = Math.round(h * 60)
+    return "${m / 60} h ${m % 60} min"
+}
+
+/** Hours between sunrise and sunset, or null if either is missing. */
+fun daylightHours(d: com.peerloom.weatherglass.data.Day): Double? = runCatching {
+    java.time.Duration.between(java.time.LocalDateTime.parse(d.sunrise), java.time.LocalDateTime.parse(d.sunset)).toMinutes() / 60.0
+}.getOrNull()
+

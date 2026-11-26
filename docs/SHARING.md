@@ -56,7 +56,7 @@ Weather codes are WMO codes, as used by Open-Meteo.
                "windKmh": 12.0, "windDir": 90, "code": 2, "isDay": true },
   "hours": [ { "time": "2026-11-26T10:00", "tempC": 24.0, "rainChance": 10, "rainMm": 0.0, "code": 2, "isDay": true } ],
   "days": [ { "date": "2026-11-26", "code": 61, "maxC": 27.0, "minC": 19.0, "rainChance": 60,
-              "sunrise": "2026-11-26T06:52", "sunset": "2026-11-26T17:30", "uvMax": 6.5 } ],
+              "sunrise": "2026-11-26T06:52", "sunset": "2026-11-26T17:30", "uvMax": 6.5, "sunHours": 7.5 } ],
   "quarters": [ { "time": "2026-11-26T09:15", "rainMm": 0.0 } ],
   "alerts": [ { "id": "...", "event": "Flood Watch", "headline": "...", "severity": "Moderate",
                 "ends": "2026-11-26T18:00:00-05:00", "description": "..." } ]
