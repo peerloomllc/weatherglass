@@ -89,7 +89,6 @@ fun AboutSheet(startOn: String? = null, onDismiss: () -> Unit) = Sheet(onDismiss
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             T("Weatherglass", 24.sp, weight = FontWeight.Medium)
             T("Simple weather. No ads, no accounts, no tracking.", 14.sp, look.subtle, align = TextAlign.Center)
-            T("Version $version", 12.sp, look.subtle)
         }
 
         AboutSection("How it works", openId == "how", { toggle("how") }) {
@@ -143,6 +142,7 @@ fun AboutSheet(startOn: String? = null, onDismiss: () -> Unit) = Sheet(onDismiss
 
         Spacer(Modifier.height(4.dp))
         T("© PeerLoom LLC", 12.sp, look.subtle, modifier = Modifier.fillMaxWidth(), align = TextAlign.Center)
+        T("v$version", 11.sp, look.subtle, modifier = Modifier.fillMaxWidth(), align = TextAlign.Center)
     }
     if (btc) BtcSheet { btc = false }
 }
