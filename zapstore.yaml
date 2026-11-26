@@ -1,0 +1,44 @@
+repository: https://github.com/peerloomllc/weatherglass
+
+name: Weatherglass
+summary: Simple weather with widgets and 29 skins - no ads, no accounts, no tracking
+description: |
+  Weatherglass tells you what the weather is doing now, over the next hours
+  and over the next ten days, and gets out of the way. No ads, no accounts,
+  no tracking and no Google services. Your phone asks the weather services
+  directly; there is no Weatherglass server.
+
+  Make it yours with 29 skins, from Minimal Mono and Paper cut to 8-bit,
+  Claymation, Ukiyo-e and Round gauge. Each skin changes the app and the
+  widgets together, and each has its own opening animation.
+
+  Features:
+  - Now, the next 48 hours and the next 10 days, with rain chance and amounts
+  - "Rain starting in about 20 minutes" from the 15-minute forecast
+  - Home screen widgets in four sizes, including a clock widget, and you
+    choose what each one shows
+  - Severe weather alerts from the US National Weather Service
+  - Optional alerts for a freeze tonight or rain starting soon
+  - Your location (rough only) or any city by search
+  - °F or °C, mph, km/h or m/s, 12 or 24 hour clock
+  - Forecasts from Open-Meteo.com (CC BY 4.0)
+
+tags:
+  - weather
+  - widgets
+  - privacy
+  - skins
+  - nostr
+
+license: MIT
+website: https://peerloomllc.com/weatherglass/
+
+images:
+  - metadata/zapstore/01-forecast.webp
+  - metadata/zapstore/02-skins.webp
+  - metadata/zapstore/03-paper.webp
+  - metadata/zapstore/04-retro.webp
+  - metadata/zapstore/05-widgets.webp
+
+metadata_sources:
+  - github
