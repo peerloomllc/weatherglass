@@ -57,6 +57,7 @@ private val WALLETS = listOf(
 private val CREDITS = listOf(
     Triple("Open-Meteo", "CC BY 4.0", "Forecasts, 15-minute rain and city search"),
     Triple("US National Weather Service", "Public domain", "Severe weather alerts"),
+    Triple("Natural Earth", "Public domain", "Coastlines, borders and city names on the map"),
     Triple("Jetpack Compose, Glance, WorkManager", "Apache 2.0", "Screens, widgets and background refresh"),
     Triple("kotlinx.serialization", "Apache 2.0", "Reading the forecast data"),
     Triple("Blender", "GPL", "Used to make the skin art (not part of the app)"),

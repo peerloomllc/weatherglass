@@ -318,7 +318,7 @@ private fun RowScope.SkinCard(skin: Skin, p: Palette, picked: Boolean, onPick: (
 }
 
 @Composable
-private fun <V> Choice(options: List<Pair<String, V>>, value: V, onPick: (V) -> Unit) {
+internal fun <V> Choice(options: List<Pair<String, V>>, value: V, onPick: (V) -> Unit) {
     Row(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(look.skin.corner.dp.coerceAtMost(14.dp))).background(look.card).padding(4.dp),
     ) {
