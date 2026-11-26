@@ -125,6 +125,7 @@ fun WeatherScreen(
 ) {
     var showPlaces by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
+    var showMap by remember { mutableStateOf(false) }
     var about by remember { mutableStateOf<String?>(null) } // null: closed; "" or a section id: open
     var reminder by remember { mutableStateOf(false) }
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -144,7 +145,7 @@ fun WeatherScreen(
             Welcome(onUseLocation = onUseLocation, onPickCity = { showPlaces = true })
         } else {
             PullToRefreshBox(isRefreshing = state.refreshing, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
-                Forecast(state, openKey, onPlaces = { showPlaces = true }, onSettings = { showSettings = true })
+                Forecast(state, openKey, onPlaces = { showPlaces = true }, onSettings = { showSettings = true }, onMap = { showMap = true })
             }
         }
     }
@@ -152,6 +153,7 @@ fun WeatherScreen(
         onRemove = onRemove, onAdd = { onAdd(it); showPlaces = false; onSearch("") }, onUseLocation = { onUseLocation(); showPlaces = false }, onSearch = onSearch)
     if (showSettings) SettingsSheet(state.settings, onDismiss = { showSettings = false }, onChange = onSettings,
         onAbout = { showSettings = false; about = "" })
+    if (showMap) state.forecast?.place?.let { MapSheet(it, state.settings) { showMap = false } }
     about?.let { start -> AboutSheet(start.ifEmpty { null }) { about = null } }
     if (reminder) DonationReminder(onDonate = { reminder = false; about = "support" }, onClose = { reminder = false })
 }
@@ -186,7 +188,7 @@ fun Button(text: String, primary: Boolean = false, modifier: Modifier = Modifier
 }
 
 @Composable
-private fun Forecast(state: UiState, openKey: Int?, onPlaces: () -> Unit, onSettings: () -> Unit) {
+private fun Forecast(state: UiState, openKey: Int?, onPlaces: () -> Unit, onSettings: () -> Unit, onMap: () -> Unit) {
     // Which opening the animation last played for, so scrolling or a refresh
     // does not replay it.
     var played by remember { mutableIntStateOf(0) }
@@ -208,6 +210,7 @@ private fun Forecast(state: UiState, openKey: Int?, onPlaces: () -> Unit, onSett
                     T(place?.name ?: "", 20.sp, weight = FontWeight.Medium, maxLines = 1)
                     Image(painterResource(R.drawable.ic_down), "Change place", Modifier.size(22.dp), colorFilter = ColorFilter.tint(look.subtle))
                 }
+                SmallIcon(R.drawable.ic_map, "Map", onMap)
                 SmallIcon(R.drawable.ic_tune, "Settings", onSettings)
             }
         }

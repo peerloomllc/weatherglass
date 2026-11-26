@@ -219,4 +219,28 @@ class WeatherTest {
         assertEquals(800, g.forecasts[0].conditionCode)
         assertEquals(listOf(1_795_705_200), g.hourly.map { it.timestamp }) // 10:00 local = 15:00Z
     }
+
+    @Test
+    fun parsesMapGrid() {
+        val g = com.peerloom.weatherglass.data.MapWeather.parse(res("map.json"), 52.52, 13.41, nowMillis = 1L)
+        assertEquals(13, g.n)
+        assertEquals(12, g.hours.size)
+        assertEquals(3, g.days.size)
+        assertTrue(g.rain.all { it.size == 169 })
+        assertTrue(g.sun.all { it.size == 169 })
+        assertTrue(g.sun.flatten().all { it in 0.0..24.0 }) // hours, not seconds
+        // Row 0 is the north edge, column 0 the west edge.
+        assertEquals(54.52, g.lat(0), 0.001)
+        assertTrue(g.lon(0) < 13.41 && g.lon(12) > 13.41)
+    }
+
+    @Test
+    fun readsBasemap() {
+        val f = listOf(java.io.File("src/main/assets/basemap.bin"), java.io.File("app/src/main/assets/basemap.bin")).first { it.exists() }
+        val b = com.peerloom.weatherglass.ui.Basemap.read(f.readBytes())
+        assertTrue(b.coast.size > 1000)
+        assertTrue(b.cities.size > 4000)
+        assertTrue(b.cities.any { it.name == "Berlin" })
+        assertTrue(b.cities.zipWithNext().all { (a, c) -> a.pop >= c.pop }) // biggest first
+    }
 }
