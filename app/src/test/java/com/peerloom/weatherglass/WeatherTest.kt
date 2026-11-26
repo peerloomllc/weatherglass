@@ -1,6 +1,7 @@
 package com.peerloom.weatherglass
 
 import com.peerloom.weatherglass.data.Condition
+import java.time.LocalDate
 import com.peerloom.weatherglass.data.Nws
 import com.peerloom.weatherglass.data.AlertKind
 import com.peerloom.weatherglass.data.alertKind
@@ -168,5 +169,17 @@ class WeatherTest {
         assertFalse(donationDue(0L, false, 13 * day))
         assertTrue(donationDue(0L, false, 14 * day))
         assertFalse(donationDue(0L, true, 30 * day)) // already shown: never again
+    }
+
+    @Test
+    fun dailySkinGoesThroughEverySkinWithoutRepeatsInARow() {
+        val n = Skins.all.size
+        val start = LocalDate.ofEpochDay(n * 600L) // the first day of a round
+        val days = (0L until 10L * n).map { Skins.daily(start.plusDays(it)) }
+        days.zipWithNext().forEach { (a, b) -> assertTrue(a.id != b.id) }
+        // Each round of n days shows every skin once.
+        days.chunked(n).forEach { round -> assertEquals(n, round.toSet().size) }
+        assertEquals(Skins.daily(start), Skins.byId(Skins.DAILY, start))
+        assertEquals(Skins.daily(start), Skins.daily(start)) // the same all day
     }
 }

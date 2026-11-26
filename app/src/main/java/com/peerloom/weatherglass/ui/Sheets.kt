@@ -139,11 +139,18 @@ fun SettingsSheet(settings: Settings, onDismiss: () -> Unit, onChange: (Settings
     Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         T(look.label("Settings"), 20.sp, weight = FontWeight.Medium)
 
-        Section("Skin", current.name, openSection == "skin", { toggle("skin") }) {
+        val daily = settings.skin == Skins.DAILY
+        Section("Skin", if (daily) "Daily: ${current.name}" else current.name, openSection == "skin", { toggle("skin") }) {
+            T(look.label("New skin every day"), 13.sp, look.subtle)
+            Choice(listOf("On" to true, "Off" to false), daily) { on ->
+                onChange(settings.copy(skin = if (on) Skins.DAILY else current.id))
+            }
+            T("Picks a different skin each day, for the app and the widgets, and goes through them all before repeating. Picking a skin below turns this off.", 12.sp, look.subtle)
+            Spacer(Modifier.height(4.dp))
             // One group open at a time; the current skin's group starts open.
             var openGroup by rememberSaveable { mutableStateOf(Skins.groups.firstOrNull { current in it.second }?.first) }
             Skins.groups.forEach { (name, skins) ->
-                SkinGroup(name, skins, settings, onChange, open = openGroup == name) {
+                SkinGroup(name, skins, current, settings, onChange, open = openGroup == name) {
                     openGroup = if (openGroup == name) null else name
                 }
             }
@@ -258,7 +265,7 @@ private fun Chevron(open: Boolean) {
 
 /** One group of skins in the picker, opened or closed by its header (the picker keeps one open at a time). */
 @Composable
-private fun SkinGroup(name: String, skins: List<Skin>, settings: Settings, onChange: (Settings) -> Unit, open: Boolean, onToggle: () -> Unit) {
+private fun SkinGroup(name: String, skins: List<Skin>, current: Skin, settings: Settings, onChange: (Settings) -> Unit, open: Boolean, onToggle: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).clickable(onClick = onToggle).padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -273,7 +280,7 @@ private fun SkinGroup(name: String, skins: List<Skin>, settings: Settings, onCha
             val dark = isSystemInDarkTheme()
             skins.chunked(2).forEach { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    row.forEach { skin -> SkinCard(skin, skin.palette(dark), skin.id == settings.skin) { onChange(settings.copy(skin = skin.id)) } }
+                    row.forEach { skin -> SkinCard(skin, skin.palette(dark), skin.id == current.id) { onChange(settings.copy(skin = skin.id)) } }
                     if (row.size == 1) Spacer(Modifier.weight(1f))
                 }
             }

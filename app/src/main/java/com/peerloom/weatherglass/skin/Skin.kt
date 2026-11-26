@@ -5,6 +5,8 @@ import android.content.Context
 import com.peerloom.weatherglass.R
 import com.peerloom.weatherglass.data.Condition
 import com.peerloom.weatherglass.data.conditionFor
+import java.time.LocalDate
+import kotlin.random.Random
 
 // A skin is the colors, type and pictures shared by the app screen and the
 // widgets, so one switch changes both.
@@ -241,7 +243,31 @@ object Skins {
         "Bitcoin" to listOf(coin, blocks, whitepaper, laser),
     )
 
-    fun byId(id: String?) = all.firstOrNull { it.id == id } ?: mono
+    /** The skin setting's value for "a different skin every day". */
+    const val DAILY = "daily"
+
+    /** The skin to show for a skin setting: [DAILY] gives today's pick. */
+    fun byId(id: String?, today: LocalDate = LocalDate.now()) =
+        if (id == DAILY) daily(today) else all.firstOrNull { it.id == id } ?: mono
+
+    /**
+     * Today's skin for the daily setting. Goes through every skin once, in a
+     * shuffled order, before any repeats, and never shows the same skin two
+     * days running. The same on every screen and widget all day.
+     */
+    fun daily(date: LocalDate): Skin {
+        val n = all.size
+        val day = date.toEpochDay()
+        val round = Math.floorDiv(day, n.toLong())
+        val order = shuffled(round)
+        val pick = order[Math.floorMod(day, n.toLong()).toInt()]
+        // A new round could start with the skin the last one ended on.
+        if (Math.floorMod(day, n.toLong()) == 0L && pick == shuffled(round - 1).last()) return order[1]
+        if (Math.floorMod(day, n.toLong()) == 1L && order[0] == shuffled(round - 1).last()) return order[0]
+        return pick
+    }
+
+    private fun shuffled(round: Long) = all.shuffled(Random(round))
 }
 
 private fun artKey(c: Condition) = when (c) {
