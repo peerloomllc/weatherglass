@@ -110,7 +110,7 @@ fun Card(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
 @Composable
 fun WeatherScreen(
     state: UiState,
-    openKey: Int,
+    openKey: Int?, // null while the app is off screen
     onRefresh: () -> Unit,
     onSelect: (Int) -> Unit,
     onRemove: (Int) -> Unit,
@@ -165,7 +165,7 @@ fun Button(text: String, primary: Boolean = false, modifier: Modifier = Modifier
 }
 
 @Composable
-private fun Forecast(state: UiState, openKey: Int, onPlaces: () -> Unit, onSettings: () -> Unit) {
+private fun Forecast(state: UiState, openKey: Int?, onPlaces: () -> Unit, onSettings: () -> Unit) {
     // Which opening the animation last played for, so scrolling or a refresh
     // does not replay it.
     var played by remember { mutableIntStateOf(0) }
@@ -198,7 +198,7 @@ private fun Forecast(state: UiState, openKey: Int, onPlaces: () -> Unit, onSetti
         }
         val now = placeNow(f.utcOffsetSeconds)
         items(f.alerts) { AlertCard(it) }
-        item { Now(f, s, play = s.animate && played != openKey, onPlayed = { played = openKey }) }
+        item { Now(f, s, play = s.animate && openKey != null && played != openKey, onPlayed = { if (openKey != null) played = openKey }) }
         val snow = conditionFor(f.current.code) == Condition.SNOW
         rainTiming(f.quarters, now, snow)?.let { line -> item { Card { T(line, 16.sp, weight = FontWeight.Medium) } } }
         item { Hourly(f, s, now) }

@@ -6,8 +6,18 @@
 #   ... -- <out folder> <style> [rain_day]      (one picture only)
 #
 # Styles:
-#   smooth  everything eases into place (used by Retro-future, with its
-#           neon glows pulsing as they come in)
+#   smooth  everything eases into place: clouds slide in, the sun rises and
+#           turns, stars and lightning pop, rain falls into place
+#   glow    smooth, with every glow and shine flaring as it comes in
+#           (Retro-future, Art Deco, Lo-fi)
+#   steps   the smooth moves in chunky held steps, like an old game
+#   popup   each piece folds up like a pop-up book page (Paper cut)
+#   crt     the picture opens out of a bright line, like an old monitor
+#           switching on
+#   glitch  pieces jitter sideways and snap into line (Vaporwave, Risograph)
+#   blink   everything blinks on like LCD segments
+#   stagger pieces appear one after another, as if drawn or printed
+#   bloom   pieces spread out slowly from nothing, like wet paint
 #   clay    the same moves, but held two frames at a time and with a squash
 #           as each piece lands, like stop-motion
 #   dice    the die rolls in from the left, its numbers flicking past as it
@@ -36,6 +46,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from render_skin import ALL, PARTS  # noqa: E402
 
 FRAMES = 18
+STEP = {"clay": 2, "steps": 3}  # hold each pose this many frames
+# When each kind of element starts, for the styles that bring pieces in one
+# after another.
+ORDER = {"slide": 1, "slide_right": 1, "rise": 3, "rise_turn": 3, "pop": 6, "fall": 8, "strike": 10}
+GLITCH = [0.28, -0.2, 0.32, -0.12, 0.18, -0.24, 0.1, -0.06, 0.03]
+BLINK = [0, 0, 1, 0, 0, 1, 1, 0, 1]
 DICE_FRAMES = 28  # the dice clip runs longer so the rolled number can be read
 GAUGE_FRAMES = 24  # room for the needle to wobble before it settles
 
@@ -67,10 +83,38 @@ def overshoot(f, a, b, peak=1.2):
     return min(1.0, t * 2) * peak if t < 0.5 else peak + (1 - peak) * ease((t - 0.5) * 2)
 
 
-def pose(role, f, style):
-    """(dx, dy, rot_z, sx, sy) for an element at frame f; all zero/one at rest."""
+def pose(role, f, style, mid_y=0.0, seed=0):
+    """(dx, dy, rot_z, sx, sy) for an element at frame f; all zero/one at rest.
+    mid_y is the element's height in the picture, for styles that squash the
+    whole picture about its middle; seed varies the glitch per element."""
     dx = dy = rot = 0.0
     sx = sy = 1.0
+    if f >= FRAMES:
+        return dx, dy, rot, sx, sy
+    if style == "popup":
+        a = ORDER.get(role, 3)
+        return 0.0, 0.0, 0.0, 1.0, overshoot(f, a, a + 7, 1.15)
+    if style == "stagger":
+        a = ORDER.get(role, 3)
+        s_ = overshoot(f, a, a + 5, 1.15)
+        return 0.0, 0.0, 0.0, s_, s_
+    if style == "bloom":
+        a = {"slide": 1, "slide_right": 1, "rise": 2, "rise_turn": 2}.get(role, 5)
+        s_ = span(f, a, a + 9)
+        return 0.0, 0.0, 0.0, s_, s_
+    if style == "blink":
+        v = BLINK[f - 1] if f <= len(BLINK) else 1
+        return 0.0, 0.0, 0.0, float(v), float(v)
+    if style == "glitch":
+        if f > len(GLITCH):
+            return dx, dy, rot, sx, sy
+        j = GLITCH[(f - 1 + seed) % len(GLITCH)] * (1 - f / (len(GLITCH) + 1))
+        return j, 0.0, 0.0, 1 + abs(j) * 0.8, 1.0
+    if style == "crt":
+        # Opens from a thin line through the middle of the picture.
+        sy = 0.03 if f <= 2 else 0.03 + 0.97 * span(f, 2, 8)
+        sx = 0.6 + 0.4 * span(f, 1, 4)
+        return 0.0, -mid_y * (1 - sy), 0.0, sx, sy
     if style == "gauge":
         return 0.0, 0.0, 0.0, 1.0, 1.0  # only the needle moves
     if style == "film":
@@ -108,20 +152,30 @@ def pose(role, f, style):
 
 
 def holder(coll):
-    """An empty at the middle of a collection that carries all its objects."""
-    objs = [o for o in coll.objects if o.type not in ("CAMERA", "LIGHT") and o.parent is None
-            and o.name != "shadow_catcher"]
+    """An empty at the middle of a collection that carries all its objects.
+    If the objects already hang off a parent outside the collection (the
+    Isometric town's camera-facing "weather" empty), the new empty hangs off
+    that parent too, so its moves happen in that parent's plane."""
+    objs = [o for o in coll.objects if o.type not in ("CAMERA", "LIGHT") and o.name != "shadow_catcher"
+            and (o.parent is None or o.parent.name not in coll.objects)]
     if not objs:
         return None
     mid = sum((o.matrix_world.translation for o in objs), Vector()) / len(objs)
     e = bpy.data.objects.new("anim_" + coll.name, None)
-    e.location = mid
     coll.objects.link(e)
+    par = objs[0].parent if all(o.parent == objs[0].parent for o in objs) else None
+    if par is not None:
+        e.parent = par
+        e.matrix_world = par.matrix_world.normalized()
+        bpy.context.view_layer.update()
+        e.location = par.matrix_world.inverted() @ mid
+    else:
+        e.location = mid
     bpy.context.view_layer.update()
-    inv = e.matrix_world.inverted()
     for o in objs:
+        world = o.matrix_world.copy()
         o.parent = e
-        o.matrix_parent_inverse = inv
+        o.matrix_parent_inverse = e.matrix_world.inverted() @ world @ o.matrix_basis.inverted()
     return e
 
 
@@ -275,6 +329,20 @@ def gauge_needles(cols):
             e.keyframe_insert("rotation_euler", frame=f)
 
 
+def crt_glow():
+    """CRT: the line flashes bright as the tube warms, then settles."""
+    for m in bpy.data.materials:
+        if not m.use_nodes:
+            continue
+        for n in m.node_tree.nodes:
+            if n.type == "EMISSION":
+                rest = n.inputs["Strength"].default_value
+                for f, k in ((1, 0.0), (2, 2.6), (4, 1.7), (8, 1.0), (FRAMES, 1.0)):
+                    n.inputs["Strength"].default_value = rest * k
+                    n.inputs["Strength"].keyframe_insert("default_value", frame=f)
+                n.inputs["Strength"].default_value = rest
+
+
 def pulse_glows():
     """Retro-future: neon dims in, flares, then settles to its normal brightness."""
     for m in bpy.data.materials:
@@ -301,7 +369,7 @@ def main():
         FRAMES = GAUGE_FRAMES
     scene.frame_start, scene.frame_end = 1, FRAMES
     scene.render.fps = 12
-    step = 2 if style == "clay" else 1
+    step = STEP.get(style, 1)
     cols = bpy.data.collections
 
     for name in ALL:
@@ -313,7 +381,8 @@ def main():
         poses = []
         for f in range(1, FRAMES + 1):
             src = f if step == 1 else min(FRAMES, f - (f - 1) % step)  # hold every other frame
-            poses.append((f, pose(ROLE.get(name, "rise"), src if f < FRAMES else FRAMES, style)))
+            poses.append((f, pose(ROLE.get(name, "rise"), src if f < FRAMES else FRAMES, style,
+                                  e.location.y, ALL.index(name))))
         key_all(e, poses)
     big = None
     if style == "dice" and "base" in cols:
@@ -321,8 +390,10 @@ def main():
         e = holder(cols["base"])
         if e:
             dice_roll(e)
-    if style == "smooth":
+    if style == "glow":
         pulse_glows()
+    if style == "crt":
+        crt_glow()
     if style == "film":
         film_flicker()
         film_scratches()
