@@ -1,5 +1,9 @@
 package com.peerloom.weatherglass.ui
 
+import androidx.compose.ui.platform.LocalContext
+import com.peerloom.weatherglass.data.Cache
+import com.peerloom.weatherglass.data.Prefs
+import com.peerloom.weatherglass.data.Share
 import com.peerloom.weatherglass.skin.Skin
 import com.peerloom.weatherglass.data.AlertKind
 import com.peerloom.weatherglass.skin.Palette
@@ -219,6 +223,11 @@ fun SettingsSheet(settings: Settings, onDismiss: () -> Unit, onChange: (Settings
             T("A note up to an hour before rain or snow starts. Quiet from 10 pm to 7 am. Checks every 15 minutes while on, which uses a little more battery.", 12.sp, look.subtle)
         }
 
+        val shared = listOfNotNull("Watch".takeIf { settings.shareGadgetbridge }, "Other apps".takeIf { settings.shareApps })
+        Section("Share weather", shared.joinToString("  ·  ").ifEmpty { "Off" }, openSection == "share", { toggle("share") }) {
+            ShareSettings(settings, onChange)
+        }
+
         Row(
             Modifier.fillMaxWidth().clip(RoundedCornerShape(look.skin.corner.dp.coerceAtMost(16.dp))).background(look.card)
                 .clickable(onClick = onAbout).padding(horizontal = 16.dp, vertical = 14.dp),
@@ -364,4 +373,33 @@ Anything else:
     runCatching { context.startActivity(send) }.onFailure {
         android.widget.Toast.makeText(context, "No email app found. Write to peerloomllc@proton.me", android.widget.Toast.LENGTH_LONG).show()
     }
+}
+
+/** Sharing the forecast with Gadgetbridge and with apps the person allows. Both stay on the phone. */
+@Composable
+private fun ShareSettings(settings: Settings, onChange: (Settings) -> Unit) {
+    val context = LocalContext.current
+    val gb = remember { Share.gadgetbridgePackages(context).isNotEmpty() }
+    T(look.label("Watch (Gadgetbridge)"), 13.sp, look.subtle)
+    Choice(listOf("On" to true, "Off" to false), settings.shareGadgetbridge) { on ->
+        onChange(settings.copy(shareGadgetbridge = on))
+        if (on) Thread {
+            val prefs = Prefs(context)
+            prefs.selectedPlace()?.let { Cache(context).load(it) }?.let { runCatching { Share.sendToGadgetbridge(context, it) } }
+        }.start()
+    }
+    T(
+        if (gb) "Sends the forecast to Gadgetbridge after each refresh, so a watch connected through it shows the same weather."
+        else "Sends the forecast to Gadgetbridge, the open-source smartwatch app, after each refresh. Gadgetbridge isn't installed on this phone.",
+        12.sp, look.subtle,
+    )
+
+    Spacer(Modifier.height(4.dp))
+    T(look.label("Other apps"), 13.sp, look.subtle)
+    Choice(listOf("On" to true, "Off" to false), settings.shareApps) { onChange(settings.copy(shareApps = it)) }
+    T(
+        "Lets apps you allow read the forecasts for your saved places, so they don't need your location or their own weather service. " +
+            "Each app has to ask you first, and that includes roughly where your places are. You can take it back in Android's app settings.",
+        12.sp, look.subtle,
+    )
 }

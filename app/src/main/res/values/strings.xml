@@ -5,4 +5,6 @@
     <string name="widget_large">Now, hours and days</string>
     <string name="widget_clock">Clock and weather</string>
     <string name="widget_loading">Loading weather…</string>
+    <string name="read_weather_label">read Weatherglass forecasts</string>
+    <string name="read_weather_description">read your Weatherglass forecasts, including roughly where your saved places are</string>
 </resources>

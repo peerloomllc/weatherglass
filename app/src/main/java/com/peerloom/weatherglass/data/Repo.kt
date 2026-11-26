@@ -7,13 +7,17 @@ import kotlinx.coroutines.withContext
 // Fetch, save and hand back. Alerts are fetched separately so a failed
 // alerts call (or a place outside the US) never blocks the forecast.
 class Repo(context: Context) {
+    private val app = context.applicationContext
     val prefs = Prefs(context)
     val cache = Cache(context)
 
     suspend fun refresh(place: Place): Forecast = withContext(Dispatchers.IO) {
         val f = OpenMeteo.fetch(place)
         val alerts = if (prefs.settings.alerts) runCatching { Nws.fetch(place.lat, place.lon) }.getOrDefault(emptyList()) else emptyList()
-        f.copy(alerts = alerts).also { cache.save(it) }
+        f.copy(alerts = alerts).also {
+            cache.save(it)
+            if (place == prefs.selectedPlace()) Share.onNewForecast(app, it)
+        }
     }
 
     // Skip the network when the saved forecast is younger than maxAgeMs.
