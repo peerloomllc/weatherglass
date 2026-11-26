@@ -141,8 +141,12 @@ fun SettingsSheet(settings: Settings, onDismiss: () -> Unit, onChange: (Settings
         T(look.label("Settings"), 20.sp, weight = FontWeight.Medium)
 
         Section("Skin", current.name, skinOpen, { skinOpen = !skinOpen }) {
+            // One group open at a time; the current skin's group starts open.
+            var openGroup by rememberSaveable { mutableStateOf(Skins.groups.firstOrNull { current in it.second }?.first) }
             Skins.groups.forEach { (name, skins) ->
-                SkinGroup(name, skins, settings, onChange, startOpen = current in skins)
+                SkinGroup(name, skins, settings, onChange, open = openGroup == name) {
+                    openGroup = if (openGroup == name) null else name
+                }
             }
         }
 
@@ -230,12 +234,11 @@ private fun Chevron(open: Boolean) {
     T("›", 22.sp, look.subtle, modifier = Modifier.rotate(turn))
 }
 
-/** One group of skins in the picker, opened or closed by its header. */
+/** One group of skins in the picker, opened or closed by its header (the picker keeps one open at a time). */
 @Composable
-private fun SkinGroup(name: String, skins: List<Skin>, settings: Settings, onChange: (Settings) -> Unit, startOpen: Boolean) {
-    var open by rememberSaveable(name) { mutableStateOf(startOpen) }
+private fun SkinGroup(name: String, skins: List<Skin>, settings: Settings, onChange: (Settings) -> Unit, open: Boolean, onToggle: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).clickable { open = !open }.padding(vertical = 6.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).clickable(onClick = onToggle).padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         T(look.label(name), 13.sp, look.subtle, modifier = Modifier.weight(1f))
