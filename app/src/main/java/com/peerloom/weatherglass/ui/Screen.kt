@@ -165,7 +165,7 @@ private fun Welcome(onUseLocation: () -> Unit, onPickCity: () -> Unit) {
         Spacer(Modifier.height(24.dp))
         T("Weatherglass", 32.sp, weight = FontWeight.Light)
         Spacer(Modifier.height(8.dp))
-        T("Your local weather. No ads, no account.", 15.sp, look.subtle)
+        T("Simple weather. No ads, no accounts, no tracking.", 15.sp, look.subtle)
         Spacer(Modifier.height(40.dp))
         Button(look.label("Use my location"), primary = true, onClick = onUseLocation)
         Spacer(Modifier.height(12.dp))
@@ -212,7 +212,7 @@ private fun Forecast(state: UiState, openKey: Int?, onPlaces: () -> Unit, onSett
         }
         if (f == null) {
             item {
-                T(if (state.refreshing) "Getting the forecast..." else state.error ?: "Pull down to load the forecast.", 16.sp, look.subtle, modifier = Modifier.padding(top = 40.dp))
+                T(if (state.refreshing) "Getting the forecast…" else state.error ?: "Pull down to load the forecast.", 16.sp, look.subtle, modifier = Modifier.padding(top = 40.dp))
             }
             return@LazyColumn
         }

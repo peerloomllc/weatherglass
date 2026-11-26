@@ -126,13 +126,13 @@ fun AboutSheet(startOn: String? = null, onDismiss: () -> Unit) = Sheet(onDismiss
         AboutSection("Contact", openId == "contact", { toggle("contact") }) {
             T("Questions, ideas or something not working? Write to us.", 14.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Button("Email", modifier = Modifier.weight(1f)) { open(context, "mailto:$EMAIL?subject=%5BWeatherglass%5D%20Feedback") }
-                Button("Issue", modifier = Modifier.weight(1f)) { open(context, ISSUES_URL) }
+                Button("Email us", modifier = Modifier.weight(1f)) { open(context, "mailto:$EMAIL?subject=%5BWeatherglass%5D%20Feedback") }
+                Button("Report a problem", modifier = Modifier.weight(1f)) { open(context, ISSUES_URL) }
             }
         }
 
         AboutSection("Credits", openId == "credits", { toggle("credits") }) {
-            T("Weatherglass is built on these, used under their licences.", 14.sp)
+            T("Weatherglass is built on these, used under their licenses.", 14.sp)
             CREDITS.forEach { (name, licence, use) ->
                 Column {
                     T("$name  ·  $licence", 14.sp, weight = FontWeight.Medium)

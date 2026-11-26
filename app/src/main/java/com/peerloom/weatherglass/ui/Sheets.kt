@@ -118,8 +118,8 @@ fun PlacesSheet(
                 }
             },
         )
-        if (state.searching) T("Searching...", 14.sp, look.subtle)
-        if (!state.searching && query.trim().length >= 2 && state.searchResults.isEmpty()) T("No places found", 14.sp, look.subtle)
+        if (state.searching) T("Searching…", 14.sp, look.subtle)
+        if (!state.searching && query.trim().length >= 2 && state.searchResults.isEmpty()) T("No matching places", 14.sp, look.subtle)
         state.searchResults.forEach { p ->
             Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { onAdd(p) }.padding(horizontal = 14.dp, vertical = 10.dp)) {
                 T(p.name, 17.sp)
@@ -132,15 +132,13 @@ fun PlacesSheet(
 @Composable
 fun SettingsSheet(settings: Settings, onDismiss: () -> Unit, onChange: (Settings) -> Unit, onAbout: () -> Unit) = Sheet(onDismiss) {
     val current = Skins.byId(settings.skin)
-    var skinOpen by rememberSaveable { mutableStateOf(false) }
-    var unitsOpen by rememberSaveable { mutableStateOf(false) }
-    var alertsOpen by rememberSaveable { mutableStateOf(false) }
-    var motionOpen by rememberSaveable { mutableStateOf(false) }
-    var mineOpen by rememberSaveable { mutableStateOf(false) }
+    // One section open at a time, like the skin groups and the About page.
+    var openSection by rememberSaveable { mutableStateOf<String?>(null) }
+    fun toggle(id: String) { openSection = if (openSection == id) null else id }
     Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         T(look.label("Settings"), 20.sp, weight = FontWeight.Medium)
 
-        Section("Skin", current.name, skinOpen, { skinOpen = !skinOpen }) {
+        Section("Skin", current.name, openSection == "skin", { toggle("skin") }) {
             // One group open at a time; the current skin's group starts open.
             var openGroup by rememberSaveable { mutableStateOf(Skins.groups.firstOrNull { current in it.second }?.first) }
             Skins.groups.forEach { (name, skins) ->
@@ -151,12 +149,17 @@ fun SettingsSheet(settings: Settings, onDismiss: () -> Unit, onChange: (Settings
             RequestSkinCard()
         }
 
+        Section("Opening animation", if (settings.animate) "On" else "Off", openSection == "motion", { toggle("motion") }) {
+            Choice(listOf("On" to true, "Off" to false), settings.animate) { onChange(settings.copy(animate = it)) }
+            T("Plays once when the app opens, in the skin's own style. Stays off if animations are turned off in Android's settings.", 12.sp, look.subtle)
+        }
+
         val units = listOf(
             if (settings.tempUnit == TempUnit.F) "°F" else "°C",
             settings.windUnit.label,
             if (settings.use24h) "24 hour" else "12 hour",
         ).joinToString("  ·  ")
-        Section("Units", units, unitsOpen, { unitsOpen = !unitsOpen }) {
+        Section("Units", units, openSection == "units", { toggle("units") }) {
             T(look.label("Temperature"), 13.sp, look.subtle)
             Choice(listOf("°F" to TempUnit.F, "°C" to TempUnit.C), settings.tempUnit) { onChange(settings.copy(tempUnit = it)) }
             T(look.label("Wind"), 13.sp, look.subtle)
@@ -165,30 +168,33 @@ fun SettingsSheet(settings: Settings, onDismiss: () -> Unit, onChange: (Settings
             Choice(listOf("12 hour" to false, "24 hour" to true), settings.use24h) { onChange(settings.copy(use24h = it)) }
         }
 
-        Section("Severe weather alerts (US)", if (settings.alerts) "On" else "Off", alertsOpen, { alertsOpen = !alertsOpen }) {
+        val on = listOfNotNull(
+            "Severe weather".takeIf { settings.alerts },
+            "Freeze tonight".takeIf { settings.freezeAlert },
+            "Rain soon".takeIf { settings.rainSoonAlert },
+        )
+        Section("Alerts", on.joinToString("  ·  ").ifEmpty { "Off" }, openSection == "alerts", { toggle("alerts") }) {
+            T(look.label("Severe weather (US)"), 13.sp, look.subtle)
             Choice(listOf("On" to true, "Off" to false), settings.alerts) { onChange(settings.copy(alerts = it)) }
-        }
+            T("Official warnings from the US National Weather Service, at the top of the screen and as a notification.", 12.sp, look.subtle)
 
-        val mine = listOfNotNull("Freeze tonight".takeIf { settings.freezeAlert }, "Rain soon".takeIf { settings.rainSoonAlert })
-        Section("Your alerts", mine.joinToString("  ·  ").ifEmpty { "Off" }, mineOpen, { mineOpen = !mineOpen }) {
+            Spacer(Modifier.height(4.dp))
             T(look.label("Freeze tonight"), 13.sp, look.subtle)
             Choice(listOf("On" to true, "Off" to false), settings.freezeAlert) { onChange(settings.copy(freezeAlert = it)) }
             if (settings.freezeAlert) {
                 val f = settings.tempUnit == TempUnit.F
+                T("Alert when the low reaches", 12.sp, look.subtle)
                 Choice(
                     listOf((if (f) "32°F" else "0°C") to 0.0, (if (f) "36°F (frost)" else "2°C (frost)") to 2.0),
                     settings.freezeAtC,
                 ) { onChange(settings.copy(freezeAtC = it)) }
             }
             T("One note in the evening when tonight's low will reach this.", 12.sp, look.subtle)
+
+            Spacer(Modifier.height(4.dp))
             T(look.label("Rain starting soon"), 13.sp, look.subtle)
             Choice(listOf("On" to true, "Off" to false), settings.rainSoonAlert) { onChange(settings.copy(rainSoonAlert = it)) }
-            T("A note up to an hour before rain or snow starts. Checks every 15 minutes while on, which uses a little more battery. Quiet from 10 pm to 7 am.", 12.sp, look.subtle)
-        }
-
-        Section("Opening animation", if (settings.animate) "On" else "Off", motionOpen, { motionOpen = !motionOpen }) {
-            Choice(listOf("On" to true, "Off" to false), settings.animate) { onChange(settings.copy(animate = it)) }
-            T("Plays once when the app opens. Also stays off if animations are turned off in Android's settings.", 12.sp, look.subtle)
+            T("A note up to an hour before rain or snow starts. Quiet from 10 pm to 7 am. Checks every 15 minutes while on, which uses a little more battery.", 12.sp, look.subtle)
         }
 
         Row(
@@ -201,7 +207,7 @@ fun SettingsSheet(settings: Settings, onDismiss: () -> Unit, onChange: (Settings
         }
 
         Spacer(Modifier.height(4.dp))
-        T("Weather data by Open-Meteo.com (CC BY 4.0). Alerts from the US National Weather Service. Your location is only sent to them to get your forecast.", 12.sp, look.subtle)
+        T("Weather data by Open-Meteo.com (CC BY 4.0). Alerts from the US National Weather Service.", 12.sp, look.subtle)
     }
 }
 
