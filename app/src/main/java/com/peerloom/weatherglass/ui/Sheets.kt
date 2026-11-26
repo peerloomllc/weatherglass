@@ -148,6 +148,7 @@ fun SettingsSheet(settings: Settings, onDismiss: () -> Unit, onChange: (Settings
                     openGroup = if (openGroup == name) null else name
                 }
             }
+            RequestSkinCard()
         }
 
         val units = listOf(
@@ -292,5 +293,47 @@ private fun <V> Choice(options: List<Pair<String, V>>, value: V, onPick: (V) -> 
                 contentAlignment = Alignment.Center,
             ) { T(label, 15.sp, if (on) look.bgTop else look.text, if (on) FontWeight.Medium else FontWeight.Normal) }
         }
+    }
+}
+
+/** "Request a skin": opens an email to PeerLoom with a short template. No server. */
+@Composable
+private fun RequestSkinCard() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    Row(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
+            .border(1.dp, look.subtle.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+            .clickable { requestSkin(context) }.padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            T(look.label("Request a skin"), 14.sp, weight = FontWeight.Medium)
+            T("Have an idea for a look? Tell us and we may make it.", 12.sp, look.subtle)
+        }
+        T("›", 22.sp, look.subtle)
+    }
+}
+
+private fun requestSkin(context: android.content.Context) {
+    val subject = "[Weatherglass] Skin request"
+    val body = """Skin name:
+
+Look or theme (what should it feel like?):
+
+Colours:
+
+Link to a reference picture (optional):
+
+Anything else:
+"""
+    val uri = android.net.Uri.parse(
+        "mailto:peerloomllc@proton.me?subject=" + android.net.Uri.encode(subject) + "&body=" + android.net.Uri.encode(body),
+    )
+    val send = android.content.Intent(android.content.Intent.ACTION_SENDTO, uri)
+        .putExtra(android.content.Intent.EXTRA_SUBJECT, subject)
+        .putExtra(android.content.Intent.EXTRA_TEXT, body)
+        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+    runCatching { context.startActivity(send) }.onFailure {
+        android.widget.Toast.makeText(context, "No email app found. Write to peerloomllc@proton.me", android.widget.Toast.LENGTH_LONG).show()
     }
 }
