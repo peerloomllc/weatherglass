@@ -20,6 +20,7 @@ import com.peerloom.weatherglass.data.windText
 import com.peerloom.weatherglass.data.Current
 import com.peerloom.weatherglass.data.Forecast
 import com.peerloom.weatherglass.data.Hour
+import com.peerloom.weatherglass.data.Day
 import com.peerloom.weatherglass.data.freezeTonight
 import com.peerloom.weatherglass.data.rainSoon
 import com.peerloom.weatherglass.data.donationDue
@@ -181,5 +182,33 @@ class WeatherTest {
         days.chunked(n).forEach { round -> assertEquals(n, round.toSet().size) }
         assertEquals(Skins.daily(start), Skins.byId(Skins.DAILY, start))
         assertEquals(Skins.daily(start), Skins.daily(start)) // the same all day
+    }
+
+    @Test
+    fun gadgetbridgeSpecUsesKelvinSecondsAndOwmCodes() {
+        val f = Forecast(
+            place = Place("Here", 1.0, 2.0),
+            fetchedAt = 1_795_701_600_000L, // 2026-11-26T14:00Z
+            utcOffsetSeconds = -18000,
+            current = Current("2026-11-26T09:00", 20.0, 21.0, 70, 12.5, 90, 61, true),
+            hours = listOf(
+                Hour("2026-11-26T07:00", 19.0, 10, 0.0, 3, true), // more than an hour ago: dropped
+                Hour("2026-11-26T10:00", 21.0, 40, 0.2, 61, true),
+            ),
+            days = listOf(
+                Day("2026-11-26", 61, 25.0, 15.0, 60, "2026-11-26T06:52", "2026-11-26T17:30", 6.0),
+                Day("2026-11-27", 0, 26.0, 16.0, 0, "2026-11-27T06:53", "2026-11-27T17:30", 7.0),
+            ),
+            quarters = emptyList(),
+        )
+        val g = com.peerloom.weatherglass.data.gadgetbridgeSpec(f, "Rain")
+        assertEquals(1_795_701_600, g.timestamp)
+        assertEquals(293, g.currentTemp)
+        assertEquals(500, g.currentConditionCode)
+        assertEquals(298, g.todayMaxTemp)
+        assertEquals(1_795_693_920, g.sunRise) // 06:52 at UTC-5 is 11:52Z
+        assertEquals(1, g.forecasts.size) // starts tomorrow
+        assertEquals(800, g.forecasts[0].conditionCode)
+        assertEquals(listOf(1_795_705_200), g.hourly.map { it.timestamp }) // 10:00 local = 15:00Z
     }
 }

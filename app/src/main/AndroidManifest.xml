@@ -5,6 +5,14 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Apps need this, granted by the person, to read the forecasts
+         (Settings > Share weather > Other apps). See docs/SHARING.md. -->
+    <permission
+        android:name="${applicationId}.READ_WEATHER"
+        android:label="@string/read_weather_label"
+        android:description="@string/read_weather_description"
+        android:protectionLevel="dangerous" />
+
     <!-- Android 11+ hides other apps unless we say which links we open. The
          About page checks for a Lightning wallet before offering "Open in
          your Lightning wallet". -->
@@ -12,6 +20,10 @@
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="lightning" />
+        </intent>
+        <!-- Gadgetbridge, to send it the forecast when that is switched on. -->
+        <intent>
+            <action android:name="nodomain.freeyourgadget.gadgetbridge.ACTION_GENERIC_WEATHER" />
         </intent>
     </queries>
 
@@ -58,5 +70,11 @@
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_clock" />
         </receiver>
+
+        <provider
+            android:name=".data.WeatherProvider"
+            android:authorities="${applicationId}.weather"
+            android:exported="true"
+            android:readPermission="${applicationId}.READ_WEATHER" />
     </application>
 </manifest>

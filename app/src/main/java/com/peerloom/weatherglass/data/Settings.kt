@@ -17,6 +17,10 @@ data class Settings(
     val rainSoonAlert: Boolean = false,
     /** Severe weather groups that still show on screen but send no notification. */
     val mutedKinds: Set<AlertKind> = emptySet(),
+    /** Send the forecast to Gadgetbridge after each refresh. */
+    val shareGadgetbridge: Boolean = false,
+    /** Let apps the person allows read the forecasts (WeatherProvider). */
+    val shareApps: Boolean = false,
 )
 
 // Small key-value settings plus the saved places list. One SharedPreferences
@@ -39,6 +43,8 @@ class Prefs(context: Context) {
             rainSoonAlert = p.getBoolean("rainSoonAlert", false),
             mutedKinds = (p.getStringSet("mutedKinds", emptySet()) ?: emptySet())
                 .mapNotNull { n -> AlertKind.entries.firstOrNull { it.name == n } }.toSet(),
+            shareGadgetbridge = p.getBoolean("shareGadgetbridge", false),
+            shareApps = p.getBoolean("shareApps", false),
         )
         set(s) {
             p.edit()
@@ -52,6 +58,8 @@ class Prefs(context: Context) {
                 .putFloat("freezeAtC", s.freezeAtC.toFloat())
                 .putBoolean("rainSoonAlert", s.rainSoonAlert)
                 .putStringSet("mutedKinds", s.mutedKinds.map { it.name }.toSet())
+                .putBoolean("shareGadgetbridge", s.shareGadgetbridge)
+                .putBoolean("shareApps", s.shareApps)
                 .apply()
         }
 
