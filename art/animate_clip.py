@@ -29,6 +29,13 @@
 #           comes down hard
 #   gauge   Round gauge: the dial stays put and its needle swings in from the
 #           far end, overshoots and settles on today's reading
+#   coin    Orange coin: the coin spins on its edge with the Bitcoin sign on
+#           its face, slows and stops, then the sign shrinks away and the
+#           weather pops up
+#   mine    Block explorer: the blocks drop in one at a time in a scattered
+#           order, as if mined, until the picture is complete
+#   laser   Laser eyes: everything eases in, then the eyes fire their beams
+#           out with a bright flash
 #
 # Every element collection is moved as one piece by an empty placed at its
 # middle. The last frame has every empty back at rest, so it matches the
@@ -54,6 +61,7 @@ GLITCH = [0.28, -0.2, 0.32, -0.12, 0.18, -0.24, 0.1, -0.06, 0.03]
 BLINK = [0, 0, 1, 0, 0, 1, 1, 0, 1]
 DICE_FRAMES = 28  # the dice clip runs longer so the rolled number can be read
 GAUGE_FRAMES = 24  # room for the needle to wobble before it settles
+COIN_FRAMES = 24  # the spin, a moment to see the Bitcoin sign, then the weather
 
 # What each element does on its way in.
 ROLE = {
@@ -115,8 +123,11 @@ def pose(role, f, style, mid_y=0.0, seed=0):
         sy = 0.03 if f <= 2 else 0.03 + 0.97 * span(f, 2, 8)
         sx = 0.6 + 0.4 * span(f, 1, 4)
         return 0.0, -mid_y * (1 - sy), 0.0, sx, sy
-    if style == "gauge":
-        return 0.0, 0.0, 0.0, 1.0, 1.0  # only the needle moves
+    if style in ("gauge", "mine"):
+        return 0.0, 0.0, 0.0, 1.0, 1.0  # only the needle (or each block) moves
+    if style == "coin":
+        s = overshoot(f, COIN_SHRINK_END, COIN_FRAMES, 1.25)
+        return 0.0, 0.0, 0.0, s, s
     if style == "film":
         # Everything sits still while the frame jumps, except the rain.
         if role != "fall":
@@ -264,6 +275,100 @@ def show_roll(big, target):
     o.keyframe_insert("hide_render", frame=SHRINK_END + 1)
 
 
+# Coin: the spin stops here, the sign holds, then shrinks away.
+COIN_STOP = 13
+COIN_SHRINK = 16
+COIN_SHRINK_END = 18
+
+
+def btc_sign(coll):
+    """The Bitcoin sign on the coin's face, in strokes hung off one empty so
+    it can shrink as a whole."""
+    import kit  # noqa: E402
+    e = bpy.data.objects.new("btc", None)
+    e.location = (0, 0, -0.4)
+    coll.objects.link(e)
+    bpy.context.view_layer.update()
+    m = kit.flat("#F7931A")
+    w, z = 0.13, -0.4
+
+    def arc(cx, cy, r, steps=16):
+        return [(cx + r * math.cos(math.radians(90 - 180 * i / steps)), cy + r * math.sin(math.radians(90 - 180 * i / steps)))
+                for i in range(steps + 1)]
+
+    k = 0.95
+    parts = [
+        [(-0.34, 0.5), (0.05, 0.5)] + arc(0.05, 0.25, 0.25) + [(-0.2, 0.0)],
+        [(-0.2, 0.0), (0.08, 0.0)] + arc(0.08, -0.25, 0.25) + [(-0.34, -0.5)],
+        [(-0.2, 0.5), (-0.2, -0.5)],
+        [(-0.1, 0.5), (-0.1, 0.66)], [(0.06, 0.5), (0.06, 0.66)],
+        [(-0.1, -0.5), (-0.1, -0.66)], [(0.06, -0.5), (0.06, -0.66)],
+    ]
+    tilt = math.radians(-14)
+    ct, st = math.cos(tilt), math.sin(tilt)
+    for pts in parts:
+        pts = [((x + 0.04) * k * ct - y * k * st, (x + 0.04) * k * st + y * k * ct) for x, y in pts]
+        o = kit.stroke(coll, m, pts, w, z, False, "btc_line")
+        o.parent = e
+        o.matrix_parent_inverse = e.matrix_world.inverted()
+    for f, sc in ((1, 1.0), (COIN_SHRINK, 1.0), (COIN_SHRINK_END, 0.0)):
+        e.scale = (max(sc, 1e-4),) * 3
+        e.keyframe_insert("scale", frame=f)
+
+
+def coin_spin(e):
+    """The coin spins on its vertical axis (squashed sideways as it turns)
+    three times, slowing down, with a small hop, and lands face up."""
+    for f in range(1, COIN_FRAMES + 1):
+        t = span(f, 1, COIN_STOP)
+        turn = 3 * 2 * math.pi * (1 - t)
+        sx = max(abs(math.cos(turn)), 0.04)
+        hop = 0.18 * math.sin(math.pi * min(1.0, (f - 1) / (COIN_STOP - 1)))
+        e.scale = (sx, 1, 1)
+        e.location.y = hop
+        e.keyframe_insert("scale", frame=f)
+        e.keyframe_insert("location", frame=f)
+    e.location.y = 0
+
+
+def mine_blocks(cols):
+    """Each block pops in on its own frame, scattered, so the picture builds
+    up block by block. Done by frame 15 of 18."""
+    for c in cols:
+        for o in c.all_objects:
+            if not o.name.startswith("cell"):
+                continue
+            p = o.matrix_world.translation
+            r = (math.sin(p.x * 91.7 + p.y * 47.3) * 43758.5453) % 1.0
+            a = 2 + int(r * 10)
+            for f, k in ((1, 0.0), (a, 0.0), (a + 1, 1.3), (a + 3, 1.0)):
+                o.scale = (max(k, 1e-4), max(k, 1e-4), 1)
+                o.keyframe_insert("scale", frame=f)
+
+
+LASER_FIRE = 11  # the beams fire here...
+LASER_HIT = 14  # ...and reach full length here
+
+
+def laser_fire():
+    """The beams shoot out of the eyes and flare, then settle."""
+    for e in bpy.data.objects:
+        if not e.name.startswith("laser"):
+            continue
+        for f, k in ((1, 0.0), (LASER_FIRE, 0.0), (LASER_FIRE + 1, 0.45), (LASER_HIT, 1.0)):
+            e.scale = (max(k, 1e-4), 1, 1)
+            e.keyframe_insert("scale", frame=f)
+    mats = {m for o in bpy.data.objects if o.name.startswith(("beam", "eye", "glow")) for m in o.data.materials}
+    for m in mats:
+        for n in m.node_tree.nodes:
+            if n.type == "EMISSION":
+                rest = n.inputs["Strength"].default_value
+                for f, k in ((1, 0.6), (LASER_FIRE, 0.6), (LASER_HIT, 2.4), (LASER_HIT + 3, 1.0), (FRAMES, 1.0)):
+                    n.inputs["Strength"].default_value = rest * k
+                    n.inputs["Strength"].keyframe_insert("default_value", frame=f)
+                n.inputs["Strength"].default_value = rest
+
+
 # Film: how far the frame jumps on the first few frames, as the projector
 # catches the film.
 JUMP = {2: 0.06, 3: -0.04, 5: 0.03, 7: -0.02}
@@ -367,6 +472,8 @@ def main():
         FRAMES = DICE_FRAMES
     if style == "gauge":
         FRAMES = GAUGE_FRAMES
+    if style == "coin":
+        FRAMES = COIN_FRAMES
     scene.frame_start, scene.frame_end = 1, FRAMES
     scene.render.fps = 12
     step = STEP.get(style, 1)
@@ -385,6 +492,15 @@ def main():
                                   e.location.y, ALL.index(name))))
         key_all(e, poses)
     big = None
+    if style == "coin" and "base" in cols:
+        btc_sign(cols["base"])
+        e = holder(cols["base"])
+        if e:
+            coin_spin(e)
+    if style == "mine":
+        mine_blocks([cols[n] for n in ALL if n in cols])
+    if style == "laser":
+        laser_fire()
     if style == "dice" and "base" in cols:
         big = dice_numbers(cols["base"])
         e = holder(cols["base"])

@@ -9,7 +9,7 @@ flatpak run org.blender.Blender -b "$here/$skin.blend" -P "$here/render_skin.py"
 # Skins that draw the weather inside a container also get a small-size set
 # with the container hidden (see render_skin.py --mini).
 case $skin in
-  terrarium | dice | gauge | iso)
+  terrarium | dice | gauge | iso | coin)
     flatpak run org.blender.Blender -b "$here/$skin.blend" -P "$here/render_skin.py" -- "$here/out/${skin}_mini" --mini 2>&1 | grep -E 'RENDERED|Error' || true
     "$here/install_skin.sh" "$skin" mini ;;
 esac

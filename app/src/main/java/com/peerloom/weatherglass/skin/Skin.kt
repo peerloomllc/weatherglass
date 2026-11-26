@@ -202,10 +202,33 @@ object Skins {
         corner = 12,
     )
 
+    // Bitcoin
+    val coin = Skin(
+        id = "coin", name = "Orange coin",
+        light = Palette(0xFF141210, 0xFF201A12, 0xFF2A2219, 0xFFF5EFE6, 0xFFA89C8A, 0xFFF7931A, 0xFFF7931A, alert = 0xFFD7263D, alertMild = 0xFFF7931A, alertText = 0xFFFFFFFF, alertMildText = 0xFF141210),
+        corner = 24,
+    )
+    val blocks = Skin(
+        id = "blocks", name = "Block explorer",
+        light = Palette(0xFF0D1626, 0xFF13233A, 0xFF1A2C47, 0xFFE8EEF6, 0xFF8DA2BF, 0xFFF7931A, 0xFFF7931A, alert = 0xFFE5484D, alertMild = 0xFFF7931A, alertText = 0xFFFFFFFF, alertMildText = 0xFF0D1626),
+        font = Font.MONO, corner = 4,
+    )
+    val whitepaper = Skin(
+        id = "whitepaper", name = "Whitepaper",
+        light = Palette(0xFFFBFAF6, 0xFFF3F1EA, 0xFFFFFFFF, 0xFF141414, 0xFF5F5B52, 0xFF141414, 0xFF141414, alert = 0xFFA4161A, alertMild = 0xFF8A5A00, alertText = 0xFFFFFFFF),
+        font = Font.SERIF, corner = 0,
+    )
+    val laser = Skin(
+        id = "laser", name = "Laser eyes",
+        light = Palette(0xFF1A1414, 0xFF2B0D0D, 0x26FFFFFF, 0xFFFFFFFF, 0xFFC9A9A9, 0xFFFF2A2A, 0xFFF7931A, alert = 0xFFFF2A2A, alertMild = 0xFFF7931A, alertText = 0xFFFFFFFF, alertMildText = 0xFF1A1414),
+        corner = 18, upperLabels = true,
+    )
+
     val all = listOf(
         mono, paper, pixel, retro, kurosawa, anime, ukiyoe, ink, crt, vapor, lcd, teletext,
         bauhaus, deco, riso, blueprint, watercolor, clay, felt, chalk,
         barometer, journal, noir, lofi, terrarium, rpg, dice, iso, gauge,
+        coin, blocks, whitepaper, laser,
     )
     /** The skin picker's groups, in order. Every skin is in exactly one. */
     val groups = listOf(
@@ -214,6 +237,7 @@ object Skins {
         "Art and print" to listOf(kurosawa, noir, anime, ukiyoe, ink, bauhaus, deco, riso, blueprint),
         "Hand-made" to listOf(paper, watercolor, clay, felt, chalk, journal),
         "Places and objects" to listOf(barometer, gauge, terrarium, iso, lofi),
+        "Bitcoin" to listOf(coin, blocks, whitepaper, laser),
     )
 
     fun byId(id: String?) = all.firstOrNull { it.id == id } ?: mono

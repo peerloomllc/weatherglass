@@ -13,6 +13,7 @@ declare -A STYLE=(
   [blueprint]=stagger [chalk]=stagger [journal]=stagger [ink]=bloom
   [watercolor]=bloom [noir]=film [kurosawa]=film [felt]=clay [clay]=clay
   [deco]=glow [lofi]=glow [retro]=glow [dice]=dice [gauge]=gauge
+  [coin]=coin [blocks]=mine [whitepaper]=stagger [laser]=laser
 )
 skins=("${@:-${!STYLE[@]}}")
 for skin in "${skins[@]}"; do

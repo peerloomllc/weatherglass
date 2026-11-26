@@ -15,13 +15,17 @@ ships 300px WebP pictures (see `install_skin.sh`).
 | `kit.py` | Shared drawing helpers and the common layout for flat skins |
 | `build_kurosawa.py`, `build_anime.py`, `build_ukiyoe.py`, `build_ink.py`, `build_crt.py`, `build_vapor.py`, `build_lcd.py`, `build_bauhaus.py`, `build_deco.py`, `build_riso.py`, `build_blueprint.py`, `build_watercolor.py`, `build_chalk.py`, `build_barometer.py`, `build_journal.py`, `build_noir.py`, `build_lofi.py` | Flat skins built with `kit.py` |
 | `build_terrarium.py`, `build_dice.py`, `build_gauge.py` | Flat skins with a jar, die or dial in the always-on `base` collection and the weather drawn smaller inside it by `kit.Plain` |
+| `build_coin.py` | Orange coin: a Bitcoin coin in `base` with the weather on its dark face (`kit.Plain`), plus a small-size set |
+| `build_blocks.py` | Block explorer: every symbol made of square blocks on one grid, each block its own `cell` object for the clip |
+| `build_whitepaper.py` | Whitepaper: thin black ink lines, rain as diagram arrows |
+| `build_laser.py` | Laser eyes: bold symbols with red laser eyes; each beam hangs off a `laser` empty at its eye |
 | `build_rpg.py` | 16-bit pixel art on a 48 x 48 grid, installed with hard edges |
 | `build_iso.py` | Lit 3D town in `base`, with `kit.Plain` symbols turned toward an isometric camera |
 | `build_clay.py`, `build_felt.py` | Lit 3D skins built with `kit.py` and `kit.lit()`. Clay takes about 2 minutes to render |
 | `build_teletext.py` | Block graphics on a 24 x 24 grid, installed with hard edges like 8-bit |
 | `render_skin.py` | Renders a scene into 18 transparent PNGs in `out/<skin>/` |
 | `install_skin.sh` | Turns those PNGs into WebP in the app (`res/drawable-nodpi/skin_<skin>_*.webp`) |
-| `render_all.sh` | Both steps: `art/render_all.sh paper`. For Terrarium, dice, gauge and town it also makes the small-size set |
+| `render_all.sh` | Both steps: `art/render_all.sh paper`. For Terrarium, dice, gauge, town and coin it also makes the small-size set |
 
 Rendering all 18 takes about 90 seconds on the GPU for Paper cut, about 40
 for Retro-future and a few seconds for 8-bit.
@@ -40,7 +44,7 @@ for Retro-future and a few seconds for 8-bit.
 
 ## Small-size pictures
 
-Terrarium, Tabletop dice, Round gauge and Isometric town draw the weather
+Terrarium, Tabletop dice, Round gauge, Isometric town and Orange coin draw the weather
 inside a jar, die, dial or town, which gets hard to read in small icons. So
 they have a second set, `skin_<skin>_<weather>_<day|night>_mini`, rendered
 with `render_skin.py --mini` (the `base` collection and the gauge pointer
@@ -61,7 +65,9 @@ art/install_clip.sh dice
 
 `animate_clip.py` styles (its header describes each): `smooth`, `glow`,
 `steps`, `popup`, `crt`, `glitch`, `blink`, `stagger`, `bloom`, `clay`,
-`film`, `gauge` and `dice` (the die rolls through its
+`film`, `gauge`, `coin` (the coin spins with the Bitcoin sign on it),
+`mine` (blocks drop in one at a time), `laser` (the eyes fire their beams)
+and `dice` (the die rolls through its
 numbers and lands on 1 for rain and thunderstorms, 20 for clear skies and 10
 otherwise, then the weather pops up). Clips go to `res/raw/clip_<skin>_*.webp`
 at 240px.
