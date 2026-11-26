@@ -92,9 +92,9 @@ private struct Medium: View {
     var body: some View {
         VStack(spacing: 8) {
             HStack(alignment: .top) {
-                Small(f: f, s: s).frame(maxWidth: 150)
+                Small(f: f, s: s).frame(maxWidth: 140)
                 Spacer(minLength: 8)
-                NextHours(f: f, s: s, count: 5)
+                NextHours(f: f, s: s, count: 4)
             }
         }
     }
@@ -135,12 +135,12 @@ private struct NextHours: View {
     var body: some View {
         let now = placeNow(f.utcOffsetSeconds)
         let key = dayString(now) + "T" + String(format: "%02d", Calendar(identifier: .gregorian).dateComponents(in: TimeZone(identifier: "UTC")!, from: now).hour ?? 0)
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             ForEach(Array(f.hours.filter { String($0.time.prefix(13)) > key }.prefix(count).enumerated()), id: \.offset) { _, h in
                 VStack(spacing: 4) {
-                    T(hourLabel(h.time, use24h: s.use24h), 11, color: look.subtle)
+                    T(hourLabel(h.time, use24h: s.use24h), 11, color: look.subtle).lineLimit(1).fixedSize()
                     WeatherIcon(code: h.code, isDay: h.isDay, size: 26)
-                    T(tempText(h.tempC, s.tempUnit), 13, .medium)
+                    T(tempText(h.tempC, s.tempUnit), 13, .medium).lineLimit(1).fixedSize()
                 }
             }
         }
