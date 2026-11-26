@@ -13,8 +13,24 @@ android {
         applicationId = "com.peerloom.weatherglass"
         minSdk = 31
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        // scripts/release.sh sets these from the release tag; local builds
+        // show the next planned version.
+        versionCode = System.getenv("APP_VERSION_CODE")?.toIntOrNull() ?: 1_000_000
+        versionName = System.getenv("APP_VERSION") ?: "1.0.0"
+    }
+
+    // Release signing comes from the environment (scripts/.env, never
+    // committed). Without it the release build is left unsigned.
+    val keystore = System.getenv("KEYSTORE_FILE")?.let { file(it) }?.takeIf { it.exists() }
+    signingConfigs {
+        if (keystore != null) {
+            create("release") {
+                storeFile = keystore
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS") ?: "weatherglass"
+                keyPassword = System.getenv("KEY_PASSWORD") ?: System.getenv("KEYSTORE_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
@@ -26,6 +42,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (keystore != null) signingConfig = signingConfigs.getByName("release")
         }
     }
 

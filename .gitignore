@@ -10,3 +10,7 @@ DONE.md
 art/out/
 *.blend1
 __pycache__/
+scripts/.env
+weatherglass-v*.apk
+weatherglass-v*.apk.sha256
+release_notes.md
