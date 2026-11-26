@@ -35,6 +35,8 @@ def coin():
     # The dark inlaid face, with a thin orange line round it.
     kit.disc(b, kit.flat("#E07F0F"), 0, 0, FACE + 0.025, -0.48, "lip")
     kit.disc(b, kit.radial("#2A2118", "#15110C"), 0, 0, FACE, -0.46, "face", unit=True)
+    # A faint Bitcoin sign worked into the face, behind the weather.
+    kit.btc(b, kit.flat("#4F3214"), 0, 0, 0.95, 0.13, -0.44)
 
 
 coin()

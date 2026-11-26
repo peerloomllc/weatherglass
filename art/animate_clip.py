@@ -289,26 +289,7 @@ def btc_sign(coll):
     e.location = (0, 0, -0.4)
     coll.objects.link(e)
     bpy.context.view_layer.update()
-    m = kit.flat("#F7931A")
-    w, z = 0.13, -0.4
-
-    def arc(cx, cy, r, steps=16):
-        return [(cx + r * math.cos(math.radians(90 - 180 * i / steps)), cy + r * math.sin(math.radians(90 - 180 * i / steps)))
-                for i in range(steps + 1)]
-
-    k = 0.95
-    parts = [
-        [(-0.34, 0.5), (0.05, 0.5)] + arc(0.05, 0.25, 0.25) + [(-0.2, 0.0)],
-        [(-0.2, 0.0), (0.08, 0.0)] + arc(0.08, -0.25, 0.25) + [(-0.34, -0.5)],
-        [(-0.2, 0.5), (-0.2, -0.5)],
-        [(-0.1, 0.5), (-0.1, 0.66)], [(0.06, 0.5), (0.06, 0.66)],
-        [(-0.1, -0.5), (-0.1, -0.66)], [(0.06, -0.5), (0.06, -0.66)],
-    ]
-    tilt = math.radians(-14)
-    ct, st = math.cos(tilt), math.sin(tilt)
-    for pts in parts:
-        pts = [((x + 0.04) * k * ct - y * k * st, (x + 0.04) * k * st + y * k * ct) for x, y in pts]
-        o = kit.stroke(coll, m, pts, w, z, False, "btc_line")
+    for o in kit.btc(coll, kit.flat("#F7931A"), 0, 0, 0.95, 0.13, -0.4, "btc_line"):
         o.parent = e
         o.matrix_parent_inverse = e.matrix_world.inverted()
     for f, sc in ((1, 1.0), (COIN_SHRINK, 1.0), (COIN_SHRINK_END, 0.0)):

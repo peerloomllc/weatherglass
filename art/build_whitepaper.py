@@ -1,6 +1,7 @@
 # "Whitepaper" skin (Bitcoin group): thin black ink on off-white paper,
-# drawn like the diagrams in the 2008 Bitcoin paper. Plain outlined shapes,
-# small filled dots for nodes, and rain drawn as diagram arrows.
+# drawn like the diagrams in the 2008 Bitcoin paper. Plain outlined shapes
+# with the Bitcoin sign in the sun and the clouds, and rain drawn as
+# diagram arrows.
 #
 #   flatpak run org.blender.Blender -b --factory-startup -P art/build_whitepaper.py -- art/whitepaper.blend
 
@@ -36,7 +37,7 @@ class Whitepaper(kit.Style):
         r = 0.34 * s
         kit.disc(c, kit.flat(PAPER), x, y, r, z, "fill")
         kit.stroke(c, ink(), kit.circle_pts(x, y, r), W, z, True, "sun")
-        kit.disc(c, ink(), x, y, 0.07 * s, z, "node")
+        kit.btc(c, ink(), x, y, 0.36 * s, 0.045, z)
         for i in range(8):
             a = 2 * math.pi * i / 8 + math.pi / 8
             kit.stroke(c, ink(), [(x + 0.47 * s * math.cos(a), y + 0.47 * s * math.sin(a)),
@@ -54,6 +55,7 @@ class Whitepaper(kit.Style):
         pts = kit.cloud_outline(x, y, s)
         kit.poly(c, kit.flat(SHADE if dark else PAPER), pts, z, "fill")
         kit.stroke(c, ink(), pts, W, z, True, "cloud")
+        kit.btc(c, ink(), x + 0.02 * s, y + 0.06 * s, 0.26 * s, 0.04, z)
         if dark:
             # Hatching along the bottom, like a shaded diagram box.
             for i in range(-4, 5):

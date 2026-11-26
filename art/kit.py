@@ -529,6 +529,34 @@ def flake_arms(x, y, r, w, angle=math.pi / 2):
     return [capsule_pts(x, y, 2 * r, w, angle + i * math.pi / 3) for i in range(3)]
 
 
+# The Bitcoin sign: a B with two short bars through the top and bottom,
+# tilted a little like the logo. About 1.3 tall at k = 1.
+
+
+def btc_lines(x, y, k):
+    """The sign's strokes as point lists, centered on (x, y), scaled by k."""
+    def arc(cx, cy, r, steps=16):
+        return [(cx + r * math.cos(math.radians(90 - 180 * i / steps)), cy + r * math.sin(math.radians(90 - 180 * i / steps)))
+                for i in range(steps + 1)]
+
+    parts = [
+        [(-0.34, 0.5), (0.05, 0.5)] + arc(0.05, 0.25, 0.25) + [(-0.2, 0.0)],
+        [(-0.2, 0.0), (0.08, 0.0)] + arc(0.08, -0.25, 0.25) + [(-0.34, -0.5)],
+        [(-0.2, 0.5), (-0.2, -0.5)],
+        [(-0.1, 0.5), (-0.1, 0.66)], [(0.06, 0.5), (0.06, 0.66)],
+        [(-0.1, -0.5), (-0.1, -0.66)], [(0.06, -0.5), (0.06, -0.66)],
+    ]
+    tilt = math.radians(-14)
+    ct, st = math.cos(tilt), math.sin(tilt)
+    return [[(x + ((px + 0.04) * ct - py * st) * k, y + ((px + 0.04) * st + py * ct) * k) for px, py in pts]
+            for pts in parts]
+
+
+def btc(c, m, x, y, k, w, z=0.0, name="btc"):
+    """Draw the Bitcoin sign with lines of width w. Returns its objects."""
+    return [stroke(c, m, pts, w, z, False, name) for pts in btc_lines(x, y, k)]
+
+
 # Cloud outline as round puffs on a flat rounded base, same as Paper cut.
 PUFFS = [(-0.47, -0.08, 0.3), (-0.12, 0.14, 0.4), (0.3, 0.02, 0.33), (0.02, -0.12, 0.3)]
 
