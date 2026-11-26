@@ -97,6 +97,14 @@ class WeatherTest {
         assertEquals(12, f.quarters.size)
         assertTrue(f.days.all { it.maxC >= it.minC })
         assertTrue(f.current.humidity in 0..100)
+        assertEquals(7.5, f.days[0].sunHours, 0.001) // 27000 seconds
+        assertEquals(0.0, f.days[1].sunHours, 0.001)
+    }
+
+    @Test fun sunHoursRoundToHalfHours() {
+        assertEquals("7.5h", com.peerloom.weatherglass.ui.sunHoursShort(7.4))
+        assertEquals("8h", com.peerloom.weatherglass.ui.sunHoursShort(7.9))
+        assertEquals("10 h 38 min", com.peerloom.weatherglass.ui.hoursMinutes(10.0 + 38 / 60.0))
     }
 
     @Test fun parsesSearch() {

@@ -48,6 +48,8 @@ data class Day(
     val sunrise: String,
     val sunset: String,
     val uvMax: Double,
+    /** Hours of sunshine expected (0 in forecasts saved before this was added). */
+    val sunHours: Double = 0.0,
 )
 
 @Serializable
