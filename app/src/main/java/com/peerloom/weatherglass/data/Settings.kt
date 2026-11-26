@@ -74,5 +74,21 @@ class Prefs(context: Context) {
         get() = p.getLong("lastRainSoon", 0L)
         set(v) { p.edit().putLong("lastRainSoon", v).apply() }
 
+    /** When the app was first used (epoch millis); set on first read. */
+    val firstUseAt: Long
+        get() = p.getLong("firstUseAt", 0L).takeIf { it != 0L }
+            ?: System.currentTimeMillis().also { p.edit().putLong("firstUseAt", it).apply() }
+
+    /** Whether the one-time donation reminder has been shown. */
+    var donateShown: Boolean
+        get() = p.getBoolean("donateShown", false)
+        set(v) { p.edit().putBoolean("donateShown", v).apply() }
+
     fun selectedPlace(): Place? = places.getOrNull(selected) ?: places.firstOrNull()
 }
+
+/** Days after first use before the one-time donation reminder, as in the other PeerLoom apps. */
+const val DONATE_AFTER_MS = 14L * 24 * 60 * 60 * 1000
+
+/** The donation reminder is due once, two weeks after first use, and never again. */
+fun donationDue(firstUseAt: Long, shown: Boolean, now: Long): Boolean = !shown && now - firstUseAt >= DONATE_AFTER_MS

@@ -19,6 +19,7 @@ import com.peerloom.weatherglass.data.Forecast
 import com.peerloom.weatherglass.data.Hour
 import com.peerloom.weatherglass.data.freezeTonight
 import com.peerloom.weatherglass.data.rainSoon
+import com.peerloom.weatherglass.data.donationDue
 import com.peerloom.weatherglass.skin.Skins
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -142,5 +143,13 @@ class WeatherTest {
         assertNull(rainSoon(wet, now, ms, 0L)) // already raining
         val later = forecast(emptyList(), listOf("2026-11-25T14:00" to 0.0, "2026-11-25T15:30" to 0.5))
         assertNull(rainSoon(later, now, ms, 0L)) // more than an hour away
+    }
+
+    @Test
+    fun donationReminderOnceAfterTwoWeeks() {
+        val day = 24 * 60 * 60 * 1000L
+        assertFalse(donationDue(0L, false, 13 * day))
+        assertTrue(donationDue(0L, false, 14 * day))
+        assertFalse(donationDue(0L, true, 30 * day)) // already shown: never again
     }
 }
