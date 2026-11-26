@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One-colour version of the launcher icon for Android's themed icons:
+     glass outline, water, spout and loop. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <!-- Shrunk a little about the middle so the loop and spout stay inside round icon masks. -->
+    <group android:pivotX="54" android:pivotY="54" android:scaleX="0.86" android:scaleY="0.86">
+    <group>
+        <clip-path android:pathData="M47,27 C55,39 66,49 66,64 A19,19 0 1,1 28,64 C28,49 39,39 47,27 Z" />
+        <path android:pathData="M20,62h60v30h-60z" android:fillColor="#FFFFFFFF" />
+    </group>
+    <path android:pathData="M61,73 Q72,70 80,44" android:strokeColor="#FFFFFFFF" android:strokeWidth="5" android:strokeLineCap="round" />
+    <path android:pathData="M47,27 C55,39 66,49 66,64 A19,19 0 1,1 28,64 C28,49 39,39 47,27 Z" android:strokeColor="#FFFFFFFF" android:strokeWidth="2.8" android:strokeLineJoin="round" />
+    <path android:pathData="M44,23.5 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" android:strokeColor="#FFFFFFFF" android:strokeWidth="2" />
+    </group>
+</vector>

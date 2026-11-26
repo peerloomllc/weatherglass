@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="432" height="432">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2E6A9E"/><stop offset="1" stop-color="#16314F"/></linearGradient>
+    <clipPath id="body"><path d="M47,27 C55,39 66,49 66,64 A19,19 0 1,1 28,64 C28,49 39,39 47,27 Z"/></clipPath>
+  </defs>
+  <rect width="108" height="108" fill="url(#bg)"/><g transform="translate(54 54) scale(0.86) translate(-54 -54)">
+  <!-- glass body, faintly filled -->
+  <path d="M47,27 C55,39 66,49 66,64 A19,19 0 1,1 28,64 C28,49 39,39 47,27 Z" fill="#FFFFFF" fill-opacity="0.12"/>
+  <!-- water in the body -->
+  <rect x="20" y="62" width="60" height="30" fill="#4FC3F7" clip-path="url(#body)"/>
+  <!-- reflection: sun and cloud in the upper glass -->
+  <circle cx="44" cy="50" r="5.5" fill="#FFD54F"/>
+  <path d="M43.5,58 h10 a3.4,3.4 0 0,0 0.2,-6.8 a4.6,4.6 0 0,0 -8.8,-1.2 a3.4,3.4 0 0,0 -1.4,8 z" fill="#FFFFFF"/>
+  <!-- spout, water up to its middle -->
+  <path d="M61,73 Q72,70 80,44" fill="none" stroke="#E8F4FF" stroke-width="6" stroke-linecap="round"/>
+  <path d="M61,73 Q72,70 80,44" fill="none" stroke="#16314F" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M62,72.6 Q70.5,70.2 75.4,58" fill="none" stroke="#4FC3F7" stroke-width="2.6" stroke-linecap="round"/>
+  <!-- glass outline and hanging loop -->
+  <path d="M47,27 C55,39 66,49 66,64 A19,19 0 1,1 28,64 C28,49 39,39 47,27 Z" fill="none" stroke="#E8F4FF" stroke-width="2.6" stroke-linejoin="round"/>
+  <circle cx="47" cy="23.5" r="3" fill="none" stroke="#E8F4FF" stroke-width="2"/>
+  <!-- highlight -->
+  <path d="M34,58 Q34,48 41,41" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-opacity="0.7"/>
+</g></svg>
