@@ -56,7 +56,7 @@ import com.peerloom.weatherglass.skin.Skins
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Sheet(onDismiss: () -> Unit, content: @Composable () -> Unit) {
+internal fun Sheet(onDismiss: () -> Unit, content: @Composable () -> Unit) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -130,7 +130,7 @@ fun PlacesSheet(
 }
 
 @Composable
-fun SettingsSheet(settings: Settings, onDismiss: () -> Unit, onChange: (Settings) -> Unit) = Sheet(onDismiss) {
+fun SettingsSheet(settings: Settings, onDismiss: () -> Unit, onChange: (Settings) -> Unit, onAbout: () -> Unit) = Sheet(onDismiss) {
     val current = Skins.byId(settings.skin)
     var skinOpen by rememberSaveable { mutableStateOf(false) }
     var unitsOpen by rememberSaveable { mutableStateOf(false) }
@@ -184,6 +184,15 @@ fun SettingsSheet(settings: Settings, onDismiss: () -> Unit, onChange: (Settings
         Section("Opening animation", if (settings.animate) "On" else "Off", motionOpen, { motionOpen = !motionOpen }) {
             Choice(listOf("On" to true, "Off" to false), settings.animate) { onChange(settings.copy(animate = it)) }
             T("Plays once when the app opens. Also stays off if animations are turned off in Android's settings.", 12.sp, look.subtle)
+        }
+
+        Row(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(look.skin.corner.dp.coerceAtMost(16.dp))).background(look.card)
+                .clickable(onClick = onAbout).padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            T(look.label("About Weatherglass"), 15.sp, weight = FontWeight.Medium, modifier = Modifier.weight(1f))
+            T("›", 22.sp, look.subtle)
         }
 
         Spacer(Modifier.height(4.dp))

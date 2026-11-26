@@ -1,5 +1,8 @@
 package com.peerloom.weatherglass.ui
 
+import androidx.compose.runtime.LaunchedEffect
+import com.peerloom.weatherglass.data.donationDue
+import com.peerloom.weatherglass.data.Prefs
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -121,6 +124,20 @@ fun WeatherScreen(
 ) {
     var showPlaces by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
+    var about by remember { mutableStateOf<String?>(null) } // null: closed; "" or a section id: open
+    var reminder by remember { mutableStateOf(false) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    // Once a forecast is showing, check the one-time donation reminder. It is
+    // marked shown as soon as it appears, whatever is tapped.
+    val hasForecast = state.forecast != null
+    LaunchedEffect(hasForecast) {
+        if (!hasForecast) return@LaunchedEffect
+        val prefs = Prefs(context)
+        if (donationDue(prefs.firstUseAt, prefs.donateShown, System.currentTimeMillis())) {
+            prefs.donateShown = true
+            reminder = true
+        }
+    }
     Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(look.bgTop, look.bgBottom)))) {
         if (state.places.isEmpty()) {
             Welcome(onUseLocation = onUseLocation, onPickCity = { showPlaces = true })
@@ -132,7 +149,10 @@ fun WeatherScreen(
     }
     if (showPlaces) PlacesSheet(state, onDismiss = { showPlaces = false; onSearch("") }, onSelect = { onSelect(it); showPlaces = false },
         onRemove = onRemove, onAdd = { onAdd(it); showPlaces = false; onSearch("") }, onUseLocation = { onUseLocation(); showPlaces = false }, onSearch = onSearch)
-    if (showSettings) SettingsSheet(state.settings, onDismiss = { showSettings = false }, onChange = onSettings)
+    if (showSettings) SettingsSheet(state.settings, onDismiss = { showSettings = false }, onChange = onSettings,
+        onAbout = { showSettings = false; about = "" })
+    about?.let { start -> AboutSheet(start.ifEmpty { null }) { about = null } }
+    if (reminder) DonationReminder(onDonate = { reminder = false; about = "support" }, onClose = { reminder = false })
 }
 
 @Composable
