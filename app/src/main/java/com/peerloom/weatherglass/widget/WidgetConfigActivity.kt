@@ -79,8 +79,8 @@ class WidgetConfigActivity : ComponentActivity() {
                             .padding(20.dp).verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        T(lk.label("Widget"), 24.sp, weight = FontWeight.Medium)
-                        T("Choose what this widget shows. Parts that don't fit its size are left out.", 15.sp, look.subtle)
+                        T(lk.label("What this widget shows"), 24.sp, weight = FontWeight.Medium)
+                        T("Parts that don't fit the widget's size are left out.", 15.sp, look.subtle)
                         Spacer(Modifier.height(6.dp))
                         Part.entries.forEach { part ->
                             val on = part in picked
