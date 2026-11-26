@@ -1,5 +1,6 @@
 package com.peerloom.weatherglass.ui
 
+import androidx.compose.ui.layout.layout
 import androidx.compose.runtime.LaunchedEffect
 import com.peerloom.weatherglass.data.donationDue
 import com.peerloom.weatherglass.data.Prefs
@@ -256,7 +257,7 @@ private fun Now(f: Forecast, s: Settings, play: Boolean, onPlayed: () -> Unit) {
     val today = f.days.firstOrNull()
     Column(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         OpeningIcon(c.code, c.isDay, 120.dp, play, onPlayed)
-        T(tempText(c.tempC, s.tempUnit), 96.sp, weight = FontWeight.Light)
+        BigTemp(temp(c.tempC, s.tempUnit))
         T(look.label(conditionLabel(c.code, c.isDay)), 20.sp)
         Spacer(Modifier.height(4.dp))
         val hl = today?.let { "  ·  H ${tempText(it.maxC, s.tempUnit)}  L ${tempText(it.minC, s.tempUnit)}" } ?: ""
@@ -374,5 +375,24 @@ private fun Footer(f: Forecast, error: String?) {
         T("Updated $ago", 13.sp, look.subtle)
         T("Weather data by Open-Meteo.com", 12.sp, look.subtle)
         if (f.alerts.isNotEmpty()) T("Alerts from the US National Weather Service", 12.sp, look.subtle)
+    }
+}
+
+/**
+ * The big temperature, centred on the number alone. The degree sign takes no
+ * width in the layout, so it hangs to the right without pulling the number
+ * off centre.
+ */
+@Composable
+private fun BigTemp(value: Int) {
+    Row {
+        T("$value", 96.sp, weight = FontWeight.Light)
+        T(
+            "°", 96.sp, weight = FontWeight.Light,
+            modifier = Modifier.layout { m, c ->
+                val p = m.measure(c.copy(minWidth = 0))
+                layout(0, p.height) { p.place(0, 0) }
+            },
+        )
     }
 }
