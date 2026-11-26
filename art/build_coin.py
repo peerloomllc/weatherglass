@@ -1,14 +1,17 @@
 # "Orange coin" skin (Bitcoin group): each weather symbol stamped on a shiny
-# orange Bitcoin coin with a dark inlaid face. The coin is in every picture;
-# the weather is drawn smaller on its face. The opening clip spins the coin
-# with the Bitcoin sign on it before the weather appears (animate_clip.py,
-# style "coin").
+# orange Bitcoin coin with a dark inlaid face. The coin, with an orange
+# Bitcoin sign at the top of its face, is in every picture; the weather is
+# drawn smaller below the sign. The sign hangs off an empty named "btc", so
+# the opening clip (animate_clip.py, style "coin") can show it big while the
+# coin spins and then move it up into place.
 #
 #   flatpak run org.blender.Blender -b --factory-startup -P art/build_coin.py -- art/coin.blend
 
 import math
 import os
 import sys
+
+import bpy
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kit  # noqa: E402
@@ -17,6 +20,7 @@ kit.setup()  # first, since it clears the scene and its materials
 
 R = 1.05  # coin radius
 FACE = 0.78  # inlaid face radius
+SIGN_Y, SIGN_K = 0.47, 0.34  # where the Bitcoin sign sits, and its size
 
 
 def coin():
@@ -35,10 +39,16 @@ def coin():
     # The dark inlaid face, with a thin orange line round it.
     kit.disc(b, kit.flat("#E07F0F"), 0, 0, FACE + 0.025, -0.48, "lip")
     kit.disc(b, kit.radial("#2A2118", "#15110C"), 0, 0, FACE, -0.46, "face", unit=True)
-    # A faint Bitcoin sign worked into the face, behind the weather.
-    kit.btc(b, kit.flat("#4F3214"), 0, 0, 0.95, 0.13, -0.44)
+    # The Bitcoin sign at the top of the face.
+    e = bpy.data.objects.new("btc", None)
+    e.location = (0, SIGN_Y, -0.44)
+    b.objects.link(e)
+    bpy.context.view_layer.update()
+    for o in kit.btc(b, kit.flat("#F7931A"), 0, SIGN_Y, SIGN_K, 0.05, -0.44):
+        o.parent = e
+        o.matrix_parent_inverse = e.matrix_world.inverted()
 
 
 coin()
-kit.build(kit.Plain(0.5, 0.0, outline="#0E0A06", ow=0.016))
+kit.build(kit.Plain(0.42, -0.17, outline="#0E0A06", ow=0.015))
 kit.save()

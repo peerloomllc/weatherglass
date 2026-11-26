@@ -37,7 +37,7 @@ class Whitepaper(kit.Style):
         r = 0.34 * s
         kit.disc(c, kit.flat(PAPER), x, y, r, z, "fill")
         kit.stroke(c, ink(), kit.circle_pts(x, y, r), W, z, True, "sun")
-        kit.btc(c, ink(), x, y, 0.36 * s, 0.045, z)
+        kit.btc(c, ink(), x, y, 0.42 * s, 0.06, z)
         for i in range(8):
             a = 2 * math.pi * i / 8 + math.pi / 8
             kit.stroke(c, ink(), [(x + 0.47 * s * math.cos(a), y + 0.47 * s * math.sin(a)),
@@ -55,7 +55,7 @@ class Whitepaper(kit.Style):
         pts = kit.cloud_outline(x, y, s)
         kit.poly(c, kit.flat(SHADE if dark else PAPER), pts, z, "fill")
         kit.stroke(c, ink(), pts, W, z, True, "cloud")
-        kit.btc(c, ink(), x + 0.02 * s, y + 0.06 * s, 0.26 * s, 0.04, z)
+        kit.btc(c, ink(), x + 0.02 * s, y + 0.04 * s, 0.34 * s, 0.055, z)
         if dark:
             # Hatching along the bottom, like a shaded diagram box.
             for i in range(-4, 5):

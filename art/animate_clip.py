@@ -29,9 +29,9 @@
 #           comes down hard
 #   gauge   Round gauge: the dial stays put and its needle swings in from the
 #           far end, overshoots and settles on today's reading
-#   coin    Orange coin: the coin spins on its edge with the Bitcoin sign on
-#           its face, slows and stops, then the sign shrinks away and the
-#           weather pops up
+#   coin    Orange coin: the coin spins on its edge with a big Bitcoin sign on
+#           its face, slows and stops, then the sign shrinks up into its place
+#           at the top and the weather pops up below it
 #   mine    Block explorer: the blocks drop in one at a time in a scattered
 #           order, as if mined, until the picture is complete
 #   laser   Laser eyes: everything eases in, then the eyes fire their beams
@@ -275,26 +275,28 @@ def show_roll(big, target):
     o.keyframe_insert("hide_render", frame=SHRINK_END + 1)
 
 
-# Coin: the spin stops here, the sign holds, then shrinks away.
+# Coin: the spin stops here, the sign holds, then shrinks into place.
 COIN_STOP = 13
 COIN_SHRINK = 16
 COIN_SHRINK_END = 18
 
 
 def btc_sign(coll):
-    """The Bitcoin sign on the coin's face, in strokes hung off one empty so
-    it can shrink as a whole."""
-    import kit  # noqa: E402
-    e = bpy.data.objects.new("btc", None)
-    e.location = (0, 0, -0.4)
-    coll.objects.link(e)
-    bpy.context.view_layer.update()
-    for o in kit.btc(coll, kit.flat("#F7931A"), 0, 0, 0.95, 0.13, -0.4, "btc_line"):
-        o.parent = e
-        o.matrix_parent_inverse = e.matrix_world.inverted()
-    for f, sc in ((1, 1.0), (COIN_SHRINK, 1.0), (COIN_SHRINK_END, 0.0)):
-        e.scale = (max(sc, 1e-4),) * 3
+    """The coin's Bitcoin sign (the "btc" empty from build_coin.py) starts big
+    in the middle of the face while the coin spins, then shrinks up into its
+    place at the top."""
+    e = next((o for o in coll.objects if o.name == "btc"), None)
+    if e is None:
+        return
+    rest = e.location.copy()
+    big = 0.95 / 0.34
+    for f, k in ((1, 0.0), (COIN_SHRINK, 0.0), (COIN_SHRINK_END, 1.0)):
+        e.location = (rest.x, rest.y * k, rest.z)
+        sc = big + (1 - big) * k
+        e.scale = (sc, sc, 1)
+        e.keyframe_insert("location", frame=f)
         e.keyframe_insert("scale", frame=f)
+    e.location = rest
 
 
 def coin_spin(e):

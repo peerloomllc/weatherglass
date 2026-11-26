@@ -207,6 +207,7 @@ object Skins {
         id = "coin", name = "Orange coin",
         light = Palette(0xFF141210, 0xFF201A12, 0xFF2A2219, 0xFFF5EFE6, 0xFFA89C8A, 0xFFF7931A, 0xFFF7931A, alert = 0xFFD7263D, alertMild = 0xFFF7931A, alertText = 0xFFFFFFFF, alertMildText = 0xFF141210),
         corner = 24,
+        miniBelow = 50, // the weather sits small under the sign, so widget icons show just the weather
     )
     val blocks = Skin(
         id = "blocks", name = "Block explorer",
