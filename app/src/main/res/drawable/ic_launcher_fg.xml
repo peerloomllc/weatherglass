@@ -1,6 +1,17 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-  <!-- An old weatherglass: a round glass bulb with a long neck. -->
-  <path android:strokeColor="#FFF5F5F5" android:strokeWidth="4" android:strokeLineCap="round" android:strokeLineJoin="round"
-      android:pathData="M54,34a14,14 0,1 1,0 28a14,14 0,1 1,0 -28zM54,62V78M46,78H62"/>
-  <path android:fillColor="#FFF5F5F5" android:pathData="M54,42a6,6 0,1 1,0 12a6,6 0,1 1,0 -12z"/>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launcher icon: the weather seen through a round glass pane, a sun
+     behind a cloud, with a shine on the glass. Sits inside the 66dp safe
+     zone, so round icon masks never clip it. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:pathData="M27,54 a27,27 0 1,0 54,0 a27,27 0 1,0 -54,0" android:fillColor="#FF7EC3EE" />
+    <group>
+        <clip-path android:pathData="M27,54 a27,27 0 1,0 54,0 a27,27 0 1,0 -54,0" />
+        <path android:pathData="M37,47 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0" android:fillColor="#FFFFD54F" />
+        <path android:pathData="M47,31.5v-3.5 M31.5,47h-3.5 M36,36l-2.5,-2.5 M58,36l2.5,-2.5 M36,58l-2.5,2.5" android:strokeColor="#FFFFD54F" android:strokeWidth="2.4" android:strokeLineCap="round" />
+        <path android:pathData="M45.5,72 h22 a7,7 0 0,0 0.5,-14 a10,10 0 0,0 -19,-2.5 a7.5,7.5 0 0,0 -3.5,16.5 z" android:fillColor="#FFB9D7EE" />
+        <path android:pathData="M44,70 h22 a7,7 0 0,0 0.5,-14 a10,10 0 0,0 -19,-2.5 a7.5,7.5 0 0,0 -3.5,16.5 z" android:fillColor="#FFFFFFFF" />
+    </group>
+    <path android:pathData="M27,54 a27,27 0 1,0 54,0 a27,27 0 1,0 -54,0" android:strokeColor="#FFE8F4FF" android:strokeWidth="3" />
+    <path android:pathData="M35,44 A21,21 0 0,1 46,33" android:strokeColor="#FFFFFFFF" android:strokeAlpha="0.75" android:strokeWidth="2.4" android:strokeLineCap="round" />
 </vector>

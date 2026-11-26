@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One-colour version of the launcher icon for Android's themed icons:
+     the pane's rim, the sun's rays and the cloud. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:pathData="M27,54 a27,27 0 1,0 54,0 a27,27 0 1,0 -54,0" android:strokeColor="#FFFFFFFF" android:strokeWidth="3.2" />
+    <group>
+        <clip-path android:pathData="M27,54 a27,27 0 1,0 54,0 a27,27 0 1,0 -54,0" />
+        <path android:pathData="M37,47 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0" android:strokeColor="#FFFFFFFF" android:strokeWidth="3" />
+        <path android:pathData="M47,31.5v-3.5 M31.5,47h-3.5 M36,36l-2.5,-2.5 M58,36l2.5,-2.5 M36,58l-2.5,2.5" android:strokeColor="#FFFFFFFF" android:strokeWidth="2.4" android:strokeLineCap="round" />
+        <path android:pathData="M44,70 h22 a7,7 0 0,0 0.5,-14 a10,10 0 0,0 -19,-2.5 a7.5,7.5 0 0,0 -3.5,16.5 z" android:fillColor="#FFFFFFFF" />
+    </group>
+</vector>
