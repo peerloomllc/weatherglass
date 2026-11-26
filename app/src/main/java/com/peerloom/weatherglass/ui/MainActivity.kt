@@ -1,5 +1,6 @@
 package com.peerloom.weatherglass.ui
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableIntStateOf
 import android.Manifest
@@ -35,8 +36,18 @@ class MainActivity : ComponentActivity() {
     // first.
     private var opens by mutableIntStateOf(1)
 
+    // Whether the app is on screen. Android can still redraw a hidden app,
+    // and the animation must not play (and count as played) out of sight.
+    private var onScreen by mutableStateOf(false)
+
+    override fun onStart() {
+        super.onStart()
+        onScreen = true
+    }
+
     override fun onStop() {
         super.onStop()
+        onScreen = false
         opens++
     }
 
@@ -74,7 +85,7 @@ class MainActivity : ComponentActivity() {
             CompositionLocalProvider(LocalLook provides lk) {
                 WeatherScreen(
                     state = state,
-                    openKey = opens,
+                    openKey = if (onScreen) opens else null,
                     onRefresh = { vm.refresh(force = true) },
                     onSelect = vm::select,
                     onRemove = vm::removePlace,

@@ -38,6 +38,14 @@ import org.xmlpull.v1.XmlPullParser
 const val DRAW_MS = 1400
 
 /**
+ * Wait before starting, in milliseconds. Android's own opening transition
+ * covers the first part of a second, and most clips do their moving early,
+ * so without this the movement is over before it can be seen. The first
+ * frame shows meanwhile.
+ */
+const val START_DELAY_MS = 450L
+
+/**
  * The big weather icon, animated once when the app opens, in the skin's own
  * way. Skins with opening clips (res/raw/clip_<skin>_<weather>_<day|night>.webp,
  * rendered in Blender) play the clip once. Skins that use the plain line
@@ -88,7 +96,7 @@ private fun ClipPlayer(clip: Int, size: Dp, onEnd: () -> Unit) {
                         override fun onAnimationEnd(drawable: Drawable?) = end()
                     })
                     setImageDrawable(d)
-                    d.start()
+                    postDelayed({ d.start() }, START_DELAY_MS)
                 } else {
                     post { end() }
                 }
@@ -112,6 +120,7 @@ private fun DrawOn(context: Context, res: Int, size: Dp, onEnd: () -> Unit) {
     }
     val t = remember { Animatable(0f) }
     LaunchedEffect(res) {
+        kotlinx.coroutines.delay(START_DELAY_MS)
         t.animateTo(1f, tween(DRAW_MS, easing = LinearEasing))
         end()
     }

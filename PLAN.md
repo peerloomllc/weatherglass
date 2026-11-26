@@ -58,7 +58,8 @@ notifications, background location tracking and heavy animated backgrounds.
   loading spinner on launch.
 - Widgets refresh every 30 to 60 minutes, and also when the app refreshes.
 - One scrolling screen. No tabs or menus to dig through.
-- Keep the app small, aiming for under 10 MB.
+- Keep the app small. The goal was under 10 MB; on 2026-11-25 Tim chose a
+  full opening clip for every skin, which brings it to about 23 MB.
 
 ## Weather data
 
@@ -156,8 +157,8 @@ How skins get made:
 - Each animation is specific to its skin (changed 2026-11-25: the shared
   motion looked wrong on custom skins and was removed). Blender clips for
   Tabletop dice, Retro-future, Claymation, Kurosawa and Round gauge; Minimal
-  Mono's line icons draw themselves on. Other skins show their picture still,
-  until they get their own.
+  Mono's line icons draw themselves on. Every other skin got its own clip too
+  (2026-11-25), styled to suit it; see art/README.md.
 - On by default, with an off switch in Settings. Stays off when Android's
   "remove animations" setting is on.
 - Widgets cannot play animations, so this is the app only.
