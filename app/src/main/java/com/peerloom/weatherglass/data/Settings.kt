@@ -15,6 +15,8 @@ data class Settings(
     val freezeAlert: Boolean = false,
     val freezeAtC: Double = 0.0,
     val rainSoonAlert: Boolean = false,
+    /** Severe weather groups that still show on screen but send no notification. */
+    val mutedKinds: Set<AlertKind> = emptySet(),
 )
 
 // Small key-value settings plus the saved places list. One SharedPreferences
@@ -35,6 +37,8 @@ class Prefs(context: Context) {
             freezeAlert = p.getBoolean("freezeAlert", false),
             freezeAtC = p.getFloat("freezeAtC", 0f).toDouble(),
             rainSoonAlert = p.getBoolean("rainSoonAlert", false),
+            mutedKinds = (p.getStringSet("mutedKinds", emptySet()) ?: emptySet())
+                .mapNotNull { n -> AlertKind.entries.firstOrNull { it.name == n } }.toSet(),
         )
         set(s) {
             p.edit()
@@ -47,6 +51,7 @@ class Prefs(context: Context) {
                 .putBoolean("freezeAlert", s.freezeAlert)
                 .putFloat("freezeAtC", s.freezeAtC.toFloat())
                 .putBoolean("rainSoonAlert", s.rainSoonAlert)
+                .putStringSet("mutedKinds", s.mutedKinds.map { it.name }.toSet())
                 .apply()
         }
 

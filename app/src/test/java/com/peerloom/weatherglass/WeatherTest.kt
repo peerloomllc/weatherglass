@@ -2,6 +2,8 @@ package com.peerloom.weatherglass
 
 import com.peerloom.weatherglass.data.Condition
 import com.peerloom.weatherglass.data.Nws
+import com.peerloom.weatherglass.data.AlertKind
+import com.peerloom.weatherglass.data.alertKind
 import com.peerloom.weatherglass.data.OpenMeteo
 import com.peerloom.weatherglass.data.Place
 import com.peerloom.weatherglass.data.Quarter
@@ -58,6 +60,21 @@ class WeatherTest {
 
     private fun q(vararg mm: Double) = mm.mapIndexed { i, v ->
         Quarter(LocalDateTime.of(2026, 11, 25, 12, 0).plusMinutes(15L * i).toString(), v)
+    }
+
+    @Test fun alertKinds() {
+        mapOf(
+            "Tornado Warning" to AlertKind.TORNADO, "Tornado Watch" to AlertKind.TORNADO,
+            "Hurricane Warning" to AlertKind.TROPICAL, "Tropical Storm Watch" to AlertKind.TROPICAL,
+            "Storm Surge Warning" to AlertKind.TROPICAL, "Extreme Wind Warning" to AlertKind.TROPICAL,
+            "Severe Thunderstorm Warning" to AlertKind.THUNDER,
+            "Flash Flood Warning" to AlertKind.FLOOD, "Coastal Flood Advisory" to AlertKind.FLOOD,
+            "Winter Storm Warning" to AlertKind.WINTER, "Freeze Warning" to AlertKind.WINTER,
+            "Wind Chill Advisory" to AlertKind.WINTER, "Extreme Cold Warning" to AlertKind.WINTER,
+            "Excessive Heat Warning" to AlertKind.HEAT,
+            "High Wind Warning" to AlertKind.WIND_FIRE, "Red Flag Warning" to AlertKind.WIND_FIRE,
+            "Dense Fog Advisory" to AlertKind.OTHER, "Air Quality Alert" to AlertKind.OTHER,
+        ).forEach { (event, kind) -> assertEquals(event, kind, alertKind(event)) }
     }
 
     @Test fun rainTimingLine() {

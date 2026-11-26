@@ -18,6 +18,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.peerloom.weatherglass.R
 import com.peerloom.weatherglass.data.Alert
+import com.peerloom.weatherglass.data.alertKind
 import com.peerloom.weatherglass.data.Forecast
 import com.peerloom.weatherglass.data.Prefs
 import com.peerloom.weatherglass.data.Repo
@@ -42,7 +43,7 @@ class RefreshWorker(context: Context, params: WorkerParameters) : CoroutineWorke
         val s = repo.prefs.settings
         val f = repo.refreshIfStale(place, (if (s.rainSoonAlert) 12 else 20) * 60_000L) ?: return Result.retry()
         Widgets.updateAll(applicationContext)
-        if (s.alerts) notifyNew(repo, f.alerts)
+        if (s.alerts) notifyNew(repo, f.alerts.filter { alertKind(it.event) !in s.mutedKinds })
         yourAlerts(repo, f, s)
         return Result.success()
     }

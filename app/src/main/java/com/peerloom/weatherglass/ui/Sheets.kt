@@ -1,6 +1,7 @@
 package com.peerloom.weatherglass.ui
 
 import com.peerloom.weatherglass.skin.Skin
+import com.peerloom.weatherglass.data.AlertKind
 import com.peerloom.weatherglass.skin.Palette
 import androidx.compose.ui.draw.rotate
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -177,6 +178,20 @@ fun SettingsSheet(settings: Settings, onDismiss: () -> Unit, onChange: (Settings
             T(look.label("Severe weather (US)"), 13.sp, look.subtle)
             Choice(listOf("On" to true, "Off" to false), settings.alerts) { onChange(settings.copy(alerts = it)) }
             T("Official warnings from the US National Weather Service, at the top of the screen and as a notification.", 12.sp, look.subtle)
+            if (settings.alerts) {
+                T("Notify me about", 12.sp, look.subtle)
+                AlertKind.entries.forEach { k ->
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        T(k.label, 14.sp, modifier = Modifier.weight(1f))
+                        Box(Modifier.width(150.dp)) {
+                            Choice(listOf("On" to true, "Off" to false), k !in settings.mutedKinds) { on ->
+                                onChange(settings.copy(mutedKinds = if (on) settings.mutedKinds - k else settings.mutedKinds + k))
+                            }
+                        }
+                    }
+                }
+                T("Groups switched off still show at the top of the screen, without a notification.", 12.sp, look.subtle)
+            }
 
             Spacer(Modifier.height(4.dp))
             T(look.label("Freeze tonight"), 13.sp, look.subtle)

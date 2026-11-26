@@ -39,3 +39,31 @@ object Nws {
         val description: String? = null,
     )
 }
+
+/** Groups of NWS alerts, each with its own notification switch. */
+enum class AlertKind(val label: String) {
+    TORNADO("Tornado"),
+    TROPICAL("Hurricane & tropical"),
+    THUNDER("Thunderstorm"),
+    FLOOD("Flood"),
+    WINTER("Winter & cold"),
+    HEAT("Heat"),
+    WIND_FIRE("Wind & fire"),
+    OTHER("Other"),
+}
+
+/** Sorts an NWS event name such as "Tornado Warning" into its group. Order matters: "Wind Chill" is winter, not wind. */
+fun alertKind(event: String): AlertKind {
+    val e = event.lowercase()
+    fun has(vararg w: String) = w.any { it in e }
+    return when {
+        has("tornado") -> AlertKind.TORNADO
+        has("hurricane", "tropical", "typhoon", "storm surge", "extreme wind") -> AlertKind.TROPICAL
+        has("thunderstorm") -> AlertKind.THUNDER
+        has("flood", "hydrologic") -> AlertKind.FLOOD
+        has("winter", "blizzard", "ice storm", "snow", "sleet", "freez", "frost", "cold", "wind chill") -> AlertKind.WINTER
+        has("heat") -> AlertKind.HEAT
+        has("wind", "fire", "red flag", "dust", "smoke") -> AlertKind.WIND_FIRE
+        else -> AlertKind.OTHER
+    }
+}
