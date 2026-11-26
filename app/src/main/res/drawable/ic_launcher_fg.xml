@@ -1,28 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Launcher icon: an old weather glass (a Goethe barometer). A teardrop
-     glass, part filled with water, with the spout whose water level rises
-     before bad weather, and a sun and cloud reflected in the glass. -->
+<!-- Launcher icon: the weather seen through a round glass pane, a sun
+     behind a cloud, with a shine on the glass. Sits inside the 66dp safe
+     zone, so round icon masks never clip it. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-    <!-- Shrunk a little about the middle so the loop and spout stay inside round icon masks. -->
-    <group android:pivotX="54" android:pivotY="54" android:scaleX="0.86" android:scaleY="0.86">
-    <!-- glass, faintly filled -->
-    <path android:pathData="M47,27 C55,39 66,49 66,64 A19,19 0 1,1 28,64 C28,49 39,39 47,27 Z" android:fillColor="#FFFFFFFF" android:fillAlpha="0.12" />
-    <!-- water in the body -->
+    <path android:pathData="M27,54 a27,27 0 1,0 54,0 a27,27 0 1,0 -54,0" android:fillColor="#FF7EC3EE" />
     <group>
-        <clip-path android:pathData="M47,27 C55,39 66,49 66,64 A19,19 0 1,1 28,64 C28,49 39,39 47,27 Z" />
-        <path android:pathData="M20,62h60v30h-60z" android:fillColor="#FF4FC3F7" />
+        <clip-path android:pathData="M27,54 a27,27 0 1,0 54,0 a27,27 0 1,0 -54,0" />
+        <path android:pathData="M37,47 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0" android:fillColor="#FFFFD54F" />
+        <path android:pathData="M47,31.5v-3.5 M31.5,47h-3.5 M36,36l-2.5,-2.5 M58,36l2.5,-2.5 M36,58l-2.5,2.5" android:strokeColor="#FFFFD54F" android:strokeWidth="2.4" android:strokeLineCap="round" />
+        <path android:pathData="M45.5,72 h22 a7,7 0 0,0 0.5,-14 a10,10 0 0,0 -19,-2.5 a7.5,7.5 0 0,0 -3.5,16.5 z" android:fillColor="#FFB9D7EE" />
+        <path android:pathData="M44,70 h22 a7,7 0 0,0 0.5,-14 a10,10 0 0,0 -19,-2.5 a7.5,7.5 0 0,0 -3.5,16.5 z" android:fillColor="#FFFFFFFF" />
     </group>
-    <!-- reflection: sun behind a cloud -->
-    <path android:pathData="M38.5,50 a5.5,5.5 0 1,0 11,0 a5.5,5.5 0 1,0 -11,0" android:fillColor="#FFFFD54F" />
-    <path android:pathData="M43.5,58 h10 a3.4,3.4 0 0,0 0.2,-6.8 a4.6,4.6 0 0,0 -8.8,-1.2 a3.4,3.4 0 0,0 -1.4,8 z" android:fillColor="#FFFFFFFF" />
-    <!-- spout, water halfway up it -->
-    <path android:pathData="M61,73 Q72,70 80,44" android:strokeColor="#FFE8F4FF" android:strokeWidth="6" android:strokeLineCap="round" />
-    <path android:pathData="M61,73 Q72,70 80,44" android:strokeColor="#FF16314F" android:strokeWidth="2.6" android:strokeLineCap="round" />
-    <path android:pathData="M62,72.6 Q70.5,70.2 75.4,58" android:strokeColor="#FF4FC3F7" android:strokeWidth="2.6" android:strokeLineCap="round" />
-    <!-- glass outline, hanging loop, highlight -->
-    <path android:pathData="M47,27 C55,39 66,49 66,64 A19,19 0 1,1 28,64 C28,49 39,39 47,27 Z" android:strokeColor="#FFE8F4FF" android:strokeWidth="2.6" android:strokeLineJoin="round" />
-    <path android:pathData="M44,23.5 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" android:strokeColor="#FFE8F4FF" android:strokeWidth="2" />
-    <path android:pathData="M34,58 Q34,48 41,41" android:strokeColor="#FFFFFFFF" android:strokeAlpha="0.7" android:strokeWidth="2" android:strokeLineCap="round" />
-    </group>
+    <path android:pathData="M27,54 a27,27 0 1,0 54,0 a27,27 0 1,0 -54,0" android:strokeColor="#FFE8F4FF" android:strokeWidth="3" />
+    <path android:pathData="M35,44 A21,21 0 0,1 46,33" android:strokeColor="#FFFFFFFF" android:strokeAlpha="0.75" android:strokeWidth="2.4" android:strokeLineCap="round" />
 </vector>
