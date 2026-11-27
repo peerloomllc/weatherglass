@@ -34,6 +34,14 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
                 store.selected = 0
             }
         }
+        // -testAlerts YES: turn on freeze tonight with a threshold of 30 °C (so
+        // it fires in the evening whatever the weather) and run the background
+        // check a few seconds after launch, to see its notification.
+        if UserDefaults.standard.bool(forKey: "testAlerts") {
+            var s = store.settings; s.freezeAlert = true; s.freezeAtC = 30; store.settings = s
+            store.defaults.removeObject(forKey: "lastFreezeDate")
+            Task { try? await Task.sleep(nanoseconds: 4_000_000_000); await Background.run() }
+        }
         if let skin = UserDefaults.standard.string(forKey: "seedSkin") {
             var s = store.settings; s.skin = skin; store.settings = s; settings = s
         }
@@ -43,6 +51,7 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         forecast = store.selectedPlace().flatMap { store.load($0) }
         location.delegate = self
         location.desiredAccuracy = kCLLocationAccuracyKilometer
+        if settings.alerts { Notifier.requestPermission() }
     }
 
     var place: Place? { places[safe: selected] ?? places.first }
@@ -58,6 +67,8 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
             else { f = try await store.refresh(p) }
             if place?.id == p.id { forecast = f }
             error = nil
+            // The banner shows these, so only mark them seen.
+            Notifier.newAlerts(f.alerts, notify: false)
             WidgetCenter.shared.reloadAllTimelines()
         } catch {
             self.error = "Couldn't update. Showing the last forecast."
@@ -98,6 +109,7 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     func update(_ s: Settings) {
         let alertsOn = s.alerts && !settings.alerts
+        if (s.alerts && !settings.alerts) || (s.freezeAlert && !settings.freezeAlert) { Notifier.requestPermission() }
         settings = s
         store.settings = s
         WidgetCenter.shared.reloadAllTimelines()

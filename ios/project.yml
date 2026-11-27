@@ -24,6 +24,9 @@ targets:
         name: SkinArt
         type: folder
         buildPhase: resources
+      # The map's built-in outlines (tools/basemap.py).
+      - path: ../app/src/main/assets/basemap.bin
+        buildPhase: resources
       # The Android app's opening clips (animated WebP), used as they are.
       - path: ../app/src/main/res/raw
         type: folder
@@ -44,6 +47,9 @@ targets:
       properties:
         # The About page checks for a Lightning wallet before offering to open one.
         LSApplicationQueriesSchemes: [lightning]
+        # Background refresh for alert notifications and widgets.
+        UIBackgroundModes: [fetch]
+        BGTaskSchedulerPermittedIdentifiers: [com.peerloom.weatherglass.refresh]
     dependencies:
       - target: WeatherglassWidgets
   WeatherglassWidgets:

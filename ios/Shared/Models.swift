@@ -83,6 +83,8 @@ struct Settings: Codable, Equatable {
     var skin: String = "mono"
     var alerts: Bool = true
     var animate: Bool = true
+    var freezeAlert: Bool = false
+    var freezeAtC: Double = 0
 
     static var defaults: Settings {
         let us = ["US", "LR", "MM"].contains(Locale.current.region?.identifier ?? "")
@@ -102,5 +104,7 @@ struct Settings: Codable, Equatable {
         skin = try c.decodeIfPresent(String.self, forKey: .skin) ?? "mono"
         alerts = try c.decodeIfPresent(Bool.self, forKey: .alerts) ?? true
         animate = try c.decodeIfPresent(Bool.self, forKey: .animate) ?? true
+        freezeAlert = try c.decodeIfPresent(Bool.self, forKey: .freezeAlert) ?? false
+        freezeAtC = try c.decodeIfPresent(Double.self, forKey: .freezeAtC) ?? 0
     }
 }
