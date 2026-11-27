@@ -4,6 +4,10 @@ import UIKit
 // The About page and the one-time donation reminder, matching the Android
 // app (ui/About.kt) and the other PeerLoom apps.
 
+/// Donations are hidden on iOS for now (asked for 2026-11-26): no "Support
+/// development" section and no two-week reminder. Set to true to bring both back.
+let showDonations = false
+
 private let lightningAddress = "peerloomllc@strike.me"
 private let strikeTipUrl = "https://strike.me/peerloomllc/"
 private let btcOnchain = "bc1q0kksenz3j4u9ppe6f4krclvzwxk7sjy00cc9cf"
@@ -49,13 +53,13 @@ struct AboutSheet: View {
                     section("How it works", "how") {
                         T("Your phone asks Open-Meteo for the forecast and the US National Weather Service for alerts, directly. There is no Weatherglass server in between, no account and no tracking. Your location is only sent to them to get your forecast, and only roughly.", 14)
                     }
-                    section("Support development", "support") {
+                    if showDonations { section("Support development", "support") {
                         T("Weatherglass is free, with no ads, accounts or subscriptions. If you get value from it, please consider returning value.", 14)
                         HStack(spacing: 10) {
                             PillButton("⚡ BTC ⚡", primary: true) { btc = true }
                             PillButton("$ USD $") { open(buyMeACoffee) }
                         }
-                    }
+                    } }
                     section("Learn about Bitcoin", "bitcoin") {
                         T("New to Bitcoin? The Satoshi Nakamoto Institute has a free, short crash course on how Bitcoin works and why it matters.", 14)
                         PillButton("Bitcoin crash course ↗\u{FE0E}") { open(crashCourse) }
@@ -189,6 +193,7 @@ struct BtcSheet: View {
 /// The donation reminder is due once, two weeks after first use, and never again.
 enum DonationReminder {
     static func due(now: Date = Date()) -> Bool {
+        guard showDonations else { return false }
         let d = Store.shared.defaults
         if d.object(forKey: "firstUseAt") == nil { d.set(now.timeIntervalSince1970, forKey: "firstUseAt") }
         let first = d.double(forKey: "firstUseAt")
