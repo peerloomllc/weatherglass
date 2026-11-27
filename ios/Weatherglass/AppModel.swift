@@ -51,7 +51,8 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         forecast = store.selectedPlace().flatMap { store.load($0) }
         location.delegate = self
         location.desiredAccuracy = kCLLocationAccuracyKilometer
-        if settings.alerts { Notifier.requestPermission() }
+        // Debug builds launched with -screenshots YES skip the prompt, for App Store screenshots.
+        if settings.alerts && !UserDefaults.standard.bool(forKey: "screenshots") { Notifier.requestPermission() }
     }
 
     var place: Place? { places[safe: selected] ?? places.first }
