@@ -29,6 +29,12 @@ Simulator. Debug builds take launch arguments for testing without taps:
 freeze tonight at 30 °C and runs the background check after 4 seconds, so
 its notification fires in the evening, place time).
 
+## On the iPhone over USB
+
+`ios/device-install.sh` builds on the Mac Mini and installs on the iPhone
+plugged into the Linux box, signed with the "Weatherglass Development" and
+"Weatherglass Widgets Development" profiles (they list the phone).
+
 ## TestFlight
 
 `ios/testflight.sh` copies the code to the Mac Mini, archives a Release
