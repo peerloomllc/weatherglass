@@ -25,7 +25,8 @@ cd ios && xcodegen && xcodebuild -project Weatherglass.xcodeproj -scheme Weather
 The app has to be signed (`-allowProvisioningUpdates`) for the widgets to
 see its data, also on the Simulator. Test on the `Weatherglass-iOS27`
 Simulator. Debug builds take launch arguments for testing without taps:
-`-seedPlace "Name,lat,lon"`, `-seedSkin id`, and `-testAlerts YES` (turns on
+`-seedPlace "Name,lat,lon"`, `-seedSkin id`, `-screenshots YES` (no
+notification prompt, for App Store screenshots) and `-testAlerts YES` (turns on
 freeze tonight at 30 °C and runs the background check after 4 seconds, so
 its notification fires in the evening, place time).
 
@@ -44,6 +45,14 @@ from App Store Connect. The App Store name is "Weatherglass Weather" (app
 ID 6839877608), since "Weatherglass" was taken. New builds still need adding
 to the "Internal Testers" group:
 `asc builds add-groups --app 6839877608 --latest --group abc2b20b-641a-46dc-9183-0d75dbb37484`.
+
+## App Store
+
+Listed as "Weatherglass Weather" (Weather, free, 4+, Data Not Collected).
+Store text, screenshots (6.9-inch, from the "iPhone 18 Pro Max" Simulator)
+and reviewer notes were set with `asc`; availability, age rating, the
+privacy label, content rights and the China compliance questions in the
+App Store Connect website. Release type: automatic after approval.
 
 ## Differences from Android
 
