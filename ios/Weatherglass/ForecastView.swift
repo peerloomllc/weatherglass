@@ -65,7 +65,7 @@ struct ForecastView: View {
                     }.accessibilityLabel("Settings")
                 }
                 if let f = model.forecast {
-                    Now(f: f, s: model.settings)
+                    Now(f: f, s: model.settings, opens: model.opens)
                     ForEach(f.alerts) { AlertBanner(alert: $0) }
                     if let e = model.error { T(e, 13, color: look.subtle) }
                     Hourly(f: f, s: model.settings)
@@ -103,10 +103,11 @@ private struct Now: View {
     @Environment(\.look) var look
     var f: Forecast
     var s: Settings
+    var opens: Int
     var body: some View {
         let c = f.current
         VStack(spacing: 4) {
-            WeatherIcon(code: c.code, isDay: c.isDay, size: 120)
+            OpeningIcon(code: c.code, isDay: c.isDay, size: 120, playKey: opens, enabled: s.animate)
             // The number is centered; the degree sign hangs off its right side.
             Text("\(temp(c.tempC, s.tempUnit))").font(look.font(84, .light)).foregroundStyle(look.text)
                 .overlay(alignment: .topTrailing) { Text("°").font(look.font(84, .light)).foregroundStyle(look.text).offset(x: 34) }

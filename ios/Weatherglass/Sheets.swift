@@ -84,6 +84,12 @@ struct SettingsSheet: View {
                     Text("New skin every day picks a different one each day, for the app and the widgets. Picking a skin turns it off.")
                 }
                 .listRowBackground(look.card)
+                Section {
+                    Toggle("Opening animation", isOn: Binding(get: { s.animate }, set: { var n = s; n.animate = $0; model.update(n) }))
+                } footer: {
+                    Text("Plays once when the app opens, in the skin's own style. Stays off when Reduce Motion is on.")
+                }
+                .listRowBackground(look.card)
                 Section(look.label("Units")) {
                     Picker("Temperature", selection: Binding(get: { s.tempUnit }, set: { var n = s; n.tempUnit = $0; model.update(n) })) {
                         Text("°F").tag(TempUnit.F); Text("°C").tag(TempUnit.C)

@@ -16,6 +16,8 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var refreshing = false
     @Published var error: String?
     @Published var results: [Place] = []
+    /// Goes up each time the app goes to the background, so the opening animation plays once per open.
+    @Published var opens = 0
     private let location = CLLocationManager()
     private var searchTask: Task<Void, Never>?
 
