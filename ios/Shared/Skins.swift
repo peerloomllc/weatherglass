@@ -51,7 +51,33 @@ enum Skins {
 
     static var all: [Skin] { file.skins }
     static var groups: [(String, [Skin])] { file.groups.map { g in (g.name, g.skins.compactMap { id in all.first { $0.id == id } }) } }
-    static func byId(_ id: String?) -> Skin { all.first { $0.id == id } ?? all[0] }
+    /// The skin setting's value for "a different skin every day".
+    static let daily = "daily"
+
+    /// The skin to show for a skin setting: `daily` gives today's pick.
+    static func byId(_ id: String?, today: Date = Date()) -> Skin {
+        id == daily ? dailyPick(today) : (all.first { $0.id == id } ?? all[0])
+    }
+
+    /// Today's skin for the daily setting: every skin once in a shuffled
+    /// order before any repeats, never the same skin two days running.
+    static func dailyPick(_ date: Date) -> Skin {
+        let n = all.count
+        guard n > 1 else { return all[0] }
+        let day = Int(floor(date.timeIntervalSince1970 / 86400 + Double(TimeZone.current.secondsFromGMT(for: date)) / 86400))
+        let round = Int(floor(Double(day) / Double(n)))
+        let i = ((day % n) + n) % n
+        let order = shuffled(round)
+        let prevLast = shuffled(round - 1).last!
+        if i == 0 && order[0] == prevLast { return order[1] }
+        if i == 1 && order[0] == prevLast { return order[0] }
+        return order[i]
+    }
+
+    private static func shuffled(_ round: Int) -> [Skin] {
+        var rng = SplitMix(seed: UInt64(bitPattern: Int64(round)))
+        return all.shuffled(using: &rng)
+    }
 
     // The Android folder is copied in under its own name.
     private static let artDir = appBundle.resourceURL?.appendingPathComponent("drawable-nodpi")
@@ -160,5 +186,18 @@ struct WeatherIcon: View {
                 .frame(width: size * 0.86, height: size * 0.86).frame(width: size, height: size)
                 .accessibilityLabel(conditionLabel(code, isDay: isDay))
         }
+    }
+}
+
+/// A small seeded random generator, so every widget and screen picks the same skin all day.
+struct SplitMix: RandomNumberGenerator {
+    var state: UInt64
+    init(seed: UInt64) { state = seed &+ 0x9E3779B97F4A7C15 }
+    mutating func next() -> UInt64 {
+        state = state &+ 0x9E3779B97F4A7C15
+        var z = state
+        z = (z ^ (z >> 30)) &* 0xBF58476D1CE4E5B9
+        z = (z ^ (z >> 27)) &* 0x94D049BB133111EB
+        return z ^ (z >> 31)
     }
 }

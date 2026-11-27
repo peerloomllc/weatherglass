@@ -35,6 +35,11 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_ENTITLEMENTS: Weatherglass/Weatherglass.entitlements
+    info:
+      path: Weatherglass/Info.plist
+      properties:
+        # The About page checks for a Lightning wallet before offering to open one.
+        LSApplicationQueriesSchemes: [lightning]
     dependencies:
       - target: WeatherglassWidgets
   WeatherglassWidgets:

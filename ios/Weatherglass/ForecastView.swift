@@ -45,6 +45,8 @@ struct ForecastView: View {
     @Environment(\.look) var look
     @State private var showPlaces = false
     @State private var showSettings = false
+    @State private var about: String?? = nil
+    @State private var reminder = false
 
     var body: some View {
         ScrollView {
@@ -80,7 +82,20 @@ struct ForecastView: View {
         }
         .refreshable { await model.refresh(force: true) }
         .sheet(isPresented: $showPlaces) { PlacesSheet() }
-        .sheet(isPresented: $showSettings) { SettingsSheet() }
+        .sheet(isPresented: $showSettings) { SettingsSheet(onAbout: { showSettings = false; DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { about = .some(nil) } }) }
+        .sheet(isPresented: Binding(get: { about != nil }, set: { if !$0 { about = nil } })) {
+            AboutSheet(openId: about ?? nil).environment(\.look, look)
+        }
+        .alert("⚡ Enjoying Weatherglass?", isPresented: $reminder) {
+            Button("Donate") { about = .some("support") }
+            Button("Maybe later", role: .cancel) {}
+            Button("I already donated") {}
+        } message: {
+            Text("Weatherglass is free, with no ads, accounts or subscriptions. If you get value from it, please consider returning value to support development.")
+        }
+        .task(id: model.forecast != nil) {
+            if model.forecast != nil && DonationReminder.due() { DonationReminder.markShown(); reminder = true }
+        }
     }
 }
 
