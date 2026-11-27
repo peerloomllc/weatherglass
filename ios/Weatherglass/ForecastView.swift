@@ -45,6 +45,8 @@ struct ForecastView: View {
     @Environment(\.look) var look
     @State private var showPlaces = false
     @State private var showSettings = false
+    @State private var about: String?? = nil
+    @State private var reminder = false
 
     var body: some View {
         ScrollView {
@@ -63,7 +65,7 @@ struct ForecastView: View {
                     }.accessibilityLabel("Settings")
                 }
                 if let f = model.forecast {
-                    Now(f: f, s: model.settings)
+                    Now(f: f, s: model.settings, opens: model.opens)
                     ForEach(f.alerts) { AlertBanner(alert: $0) }
                     if let e = model.error { T(e, 13, color: look.subtle) }
                     Hourly(f: f, s: model.settings)
@@ -80,7 +82,20 @@ struct ForecastView: View {
         }
         .refreshable { await model.refresh(force: true) }
         .sheet(isPresented: $showPlaces) { PlacesSheet() }
-        .sheet(isPresented: $showSettings) { SettingsSheet() }
+        .sheet(isPresented: $showSettings) { SettingsSheet(onAbout: { showSettings = false; DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { about = .some(nil) } }) }
+        .sheet(isPresented: Binding(get: { about != nil }, set: { if !$0 { about = nil } })) {
+            AboutSheet(openId: about ?? nil).environment(\.look, look)
+        }
+        .alert("⚡ Enjoying Weatherglass?", isPresented: $reminder) {
+            Button("Donate") { about = .some("support") }
+            Button("Maybe later", role: .cancel) {}
+            Button("I already donated") {}
+        } message: {
+            Text("Weatherglass is free, with no ads, accounts or subscriptions. If you get value from it, please consider returning value to support development.")
+        }
+        .task(id: model.forecast != nil) {
+            if model.forecast != nil && DonationReminder.due() { DonationReminder.markShown(); reminder = true }
+        }
     }
 }
 
@@ -88,10 +103,11 @@ private struct Now: View {
     @Environment(\.look) var look
     var f: Forecast
     var s: Settings
+    var opens: Int
     var body: some View {
         let c = f.current
         VStack(spacing: 4) {
-            WeatherIcon(code: c.code, isDay: c.isDay, size: 120)
+            OpeningIcon(code: c.code, isDay: c.isDay, size: 120, playKey: opens, enabled: s.animate)
             // The number is centered; the degree sign hangs off its right side.
             Text("\(temp(c.tempC, s.tempUnit))").font(look.font(84, .light)).foregroundStyle(look.text)
                 .overlay(alignment: .topTrailing) { Text("°").font(look.font(84, .light)).foregroundStyle(look.text).offset(x: 34) }

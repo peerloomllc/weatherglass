@@ -82,9 +82,25 @@ struct Settings: Codable, Equatable {
     var use24h: Bool
     var skin: String = "mono"
     var alerts: Bool = true
+    var animate: Bool = true
 
     static var defaults: Settings {
         let us = ["US", "LR", "MM"].contains(Locale.current.region?.identifier ?? "")
         return Settings(tempUnit: us ? .F : .C, windUnit: us ? .MPH : .KMH, use24h: !us)
+    }
+
+    // Older saved settings lack newer fields; fill them with defaults.
+    init(tempUnit: TempUnit, windUnit: WindUnit, use24h: Bool, skin: String = "mono", alerts: Bool = true, animate: Bool = true) {
+        self.tempUnit = tempUnit; self.windUnit = windUnit; self.use24h = use24h; self.skin = skin; self.alerts = alerts; self.animate = animate
+    }
+
+    init(from d: Decoder) throws {
+        let c = try d.container(keyedBy: CodingKeys.self)
+        tempUnit = try c.decode(TempUnit.self, forKey: .tempUnit)
+        windUnit = try c.decode(WindUnit.self, forKey: .windUnit)
+        use24h = try c.decode(Bool.self, forKey: .use24h)
+        skin = try c.decodeIfPresent(String.self, forKey: .skin) ?? "mono"
+        alerts = try c.decodeIfPresent(Bool.self, forKey: .alerts) ?? true
+        animate = try c.decodeIfPresent(Bool.self, forKey: .animate) ?? true
     }
 }

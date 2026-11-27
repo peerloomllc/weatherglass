@@ -58,16 +58,20 @@ struct SettingsSheet: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var scheme
     @State private var openGroup: String?
+    var onAbout: () -> Void = {}
 
     var body: some View {
         let s = model.settings
         NavigationStack {
             List {
-                Section(look.label("Skin")) {
+                Section {
+                    Toggle("New skin every day", isOn: Binding(get: { s.skin == Skins.daily }, set: { on in
+                        var n = s; n.skin = on ? Skins.daily : Skins.byId(s.skin).id; model.update(n)
+                    }))
                     ForEach(Skins.groups, id: \.0) { name, skins in
                         DisclosureGroup(isExpanded: Binding(get: { openGroup == name }, set: { openGroup = $0 ? name : nil })) {
                             LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible())], spacing: 12) {
-                                ForEach(skins) { skin in SkinCard(skin: skin, picked: skin.id == s.skin, dark: scheme == .dark) {
+                                ForEach(skins) { skin in SkinCard(skin: skin, picked: skin.id == Skins.byId(s.skin).id, dark: scheme == .dark) {
                                     var n = s; n.skin = skin.id; model.update(n)
                                 } }
                             }
@@ -76,6 +80,14 @@ struct SettingsSheet: View {
                             HStack { T(look.label(name), 15); Spacer(); T("\(skins.count)", 13, color: look.subtle) }
                         }
                     }
+                } header: { Text(look.label(s.skin == Skins.daily ? "Skin · Daily: \(Skins.byId(s.skin).name)" : "Skin")) } footer: {
+                    Text("New skin every day picks a different one each day, for the app and the widgets. Picking a skin turns it off.")
+                }
+                .listRowBackground(look.card)
+                Section {
+                    Toggle("Opening animation", isOn: Binding(get: { s.animate }, set: { var n = s; n.animate = $0; model.update(n) }))
+                } footer: {
+                    Text("Plays once when the app opens, in the skin's own style. Stays off when Reduce Motion is on.")
                 }
                 .listRowBackground(look.card)
                 Section(look.label("Units")) {
@@ -97,6 +109,10 @@ struct SettingsSheet: View {
                 }
                 .listRowBackground(look.card)
                 Section {
+                    Button(action: onAbout) { HStack { T(look.label("About Weatherglass"), 15, .medium); Spacer(); Image(systemName: "chevron.right").foregroundStyle(look.subtle) } }
+                }
+                .listRowBackground(look.card)
+                Section {
                     T("Weather data by Open-Meteo.com (CC BY 4.0). Alerts from the US National Weather Service.", 12, color: look.subtle)
                 }
                 .listRowBackground(Color.clear)
@@ -108,7 +124,7 @@ struct SettingsSheet: View {
             .navigationTitle(look.label("Settings"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
-            .onAppear { openGroup = Skins.groups.first { $0.1.contains { $0.id == s.skin } }?.0 }
+            .onAppear { openGroup = Skins.groups.first { $0.1.contains { $0.id == Skins.byId(s.skin).id } }?.0 }
         }
     }
 }

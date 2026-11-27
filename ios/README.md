@@ -5,8 +5,8 @@ the same skins as the Android app:
 
 - `Weatherglass/skins.json` is written from the Android `Skin.kt` by
   `tools/skins_json.py`. Run it after changing a skin.
-- The skin pictures are the Android files in
-  `app/src/main/res/drawable-nodpi`, copied into the app as they are.
+- The skin pictures and opening clips are the Android files in
+  `app/src/main/res/drawable-nodpi` and `app/src/main/res/raw`, copied into the app as they are.
   The widget extension reads them from the app's bundle.
 - `Shared/` is compiled into both the app and the widgets. They share
   settings, places and saved forecasts through the app group
@@ -28,5 +28,5 @@ as launch arguments, to start with a place without tapping.
 
 ## Not yet
 
-Opening animations, alerts as notifications, the map, the daily skin,
-weather sharing and the About page are Android-only so far.
+Alerts as notifications and the map are Android-only so far, and
+weather sharing has no iPhone equivalent.

@@ -24,6 +24,10 @@ targets:
         name: SkinArt
         type: folder
         buildPhase: resources
+      # The Android app's opening clips (animated WebP), used as they are.
+      - path: ../app/src/main/res/raw
+        type: folder
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.peerloom.weatherglass
@@ -35,6 +39,11 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_ENTITLEMENTS: Weatherglass/Weatherglass.entitlements
+    info:
+      path: Weatherglass/Info.plist
+      properties:
+        # The About page checks for a Lightning wallet before offering to open one.
+        LSApplicationQueriesSchemes: [lightning]
     dependencies:
       - target: WeatherglassWidgets
   WeatherglassWidgets:

@@ -9,7 +9,10 @@ struct WeatherglassApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(model)
-                .onChange(of: phase) { _, p in if p == .active { Task { await model.refresh() } } }
+                .onChange(of: phase) { _, p in
+                    if p == .background { model.opens += 1 }
+                    if p == .active { Task { await model.refresh() } }
+                }
         }
     }
 }
