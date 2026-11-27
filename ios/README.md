@@ -29,6 +29,16 @@ Simulator. Debug builds take launch arguments for testing without taps:
 freeze tonight at 30 °C and runs the background check after 4 seconds, so
 its notification fires in the evening, place time).
 
+## TestFlight
+
+`ios/testflight.sh` copies the code to the Mac Mini, archives a Release
+build, signs it with the "Weatherglass AppStore" and "Weatherglass Widgets
+AppStore" profiles and uploads it with the `asc` CLI. The build number comes
+from App Store Connect. The App Store name is "Weatherglass Weather" (app
+ID 6839877608), since "Weatherglass" was taken. New builds still need adding
+to the "Internal Testers" group:
+`asc builds add-groups --app 6839877608 --latest --group abc2b20b-641a-46dc-9183-0d75dbb37484`.
+
 ## Differences from Android
 
 - Notifications (severe weather and freeze tonight) come from iOS
