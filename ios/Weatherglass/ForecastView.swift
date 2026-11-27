@@ -45,6 +45,7 @@ struct ForecastView: View {
     @Environment(\.look) var look
     @State private var showPlaces = false
     @State private var showSettings = false
+    @State private var showMap = false
     @State private var about: String?? = nil
     @State private var reminder = false
 
@@ -60,6 +61,9 @@ struct ForecastView: View {
                         }
                     }
                     Spacer()
+                    Button { showMap = true } label: {
+                        Image(systemName: "map").font(.system(size: 20)).foregroundStyle(look.text).frame(width: 44, height: 44)
+                    }.accessibilityLabel("Map")
                     Button { showSettings = true } label: {
                         Image(systemName: "slider.horizontal.3").font(.system(size: 20)).foregroundStyle(look.text).frame(width: 44, height: 44)
                     }.accessibilityLabel("Settings")
@@ -82,6 +86,7 @@ struct ForecastView: View {
         }
         .refreshable { await model.refresh(force: true) }
         .sheet(isPresented: $showPlaces) { PlacesSheet() }
+        .sheet(isPresented: $showMap) { if let f = model.forecast { MapSheet(place: f.place, settings: model.settings, utcOffset: f.utcOffsetSeconds).environment(\.look, look) } }
         .sheet(isPresented: $showSettings) { SettingsSheet(onAbout: { showSettings = false; DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { about = .some(nil) } }) }
         .sheet(isPresented: Binding(get: { about != nil }, set: { if !$0 { about = nil } })) {
             AboutSheet(openId: about ?? nil).environment(\.look, look)

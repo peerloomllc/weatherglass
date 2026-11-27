@@ -5,8 +5,9 @@ the same skins as the Android app:
 
 - `Weatherglass/skins.json` is written from the Android `Skin.kt` by
   `tools/skins_json.py`. Run it after changing a skin.
-- The skin pictures and opening clips are the Android files in
-  `app/src/main/res/drawable-nodpi` and `app/src/main/res/raw`, copied into the app as they are.
+- The skin pictures, opening clips and map outlines are the Android files
+  in `app/src/main/res/drawable-nodpi`, `app/src/main/res/raw` and
+  `app/src/main/assets/basemap.bin`, copied into the app as they are.
   The widget extension reads them from the app's bundle.
 - `Shared/` is compiled into both the app and the widgets. They share
   settings, places and saved forecasts through the app group
@@ -23,10 +24,15 @@ cd ios && xcodegen && xcodebuild -project Weatherglass.xcodeproj -scheme Weather
 
 The app has to be signed (`-allowProvisioningUpdates`) for the widgets to
 see its data, also on the Simulator. Test on the `Weatherglass-iOS27`
-Simulator. Debug builds take `-seedPlace "Name,lat,lon"` and `-seedSkin id`
-as launch arguments, to start with a place without tapping.
+Simulator. Debug builds take launch arguments for testing without taps:
+`-seedPlace "Name,lat,lon"`, `-seedSkin id`, and `-testAlerts YES` (turns on
+freeze tonight at 30 °C and runs the background check after 4 seconds, so
+its notification fires in the evening, place time).
 
-## Not yet
+## Differences from Android
 
-Alerts as notifications and the map are Android-only so far, and
-weather sharing has no iPhone equivalent.
+- Notifications (severe weather and freeze tonight) come from iOS
+  background refresh, which iOS runs when it chooses, so they can be late.
+- No "rain starting soon" alert: it needs a check every 15 minutes, which
+  iOS does not allow.
+- No weather sharing with other apps; iOS has no equivalent.

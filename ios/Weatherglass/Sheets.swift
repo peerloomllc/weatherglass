@@ -104,8 +104,15 @@ struct SettingsSheet: View {
                 .listRowBackground(look.card)
                 Section {
                     Toggle("Severe weather (US)", isOn: Binding(get: { s.alerts }, set: { var n = s; n.alerts = $0; model.update(n) }))
+                    Toggle("Freeze tonight", isOn: Binding(get: { s.freezeAlert }, set: { var n = s; n.freezeAlert = $0; model.update(n) }))
+                    if s.freezeAlert {
+                        Picker("Alert when the low reaches", selection: Binding(get: { s.freezeAtC }, set: { var n = s; n.freezeAtC = $0; model.update(n) })) {
+                            Text(s.tempUnit == .F ? "32°F" : "0°C").tag(0.0)
+                            Text(s.tempUnit == .F ? "36°F (frost)" : "2°C (frost)").tag(2.0)
+                        }
+                    }
                 } header: { Text(look.label("Alerts")) } footer: {
-                    Text("Official warnings from the US National Weather Service, shown at the top of the screen.")
+                    Text("Severe weather: official warnings from the US National Weather Service, at the top of the screen and as a notification. Freeze tonight: one note in the evening when tonight's low will reach the temperature you pick. iOS decides when Weatherglass can check in the background, so notifications can come late.")
                 }
                 .listRowBackground(look.card)
                 Section {
