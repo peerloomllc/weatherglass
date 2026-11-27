@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Release Weatherglass: build a signed APK, then publish it to GitHub, Zapstore
-# and a Nostr announcement.
+# and a Nostr announcement, and send the iPhone app to the App Store.
 #
 #   scripts/release.sh            next version (v1.0.0 first, then a patch bump)
 #   scripts/release.sh v1.2.0     a given version
 #
 # Follows ../RELEASE-PIPELINE.md where it applies. Weatherglass is a plain
-# Gradle app with no desktop, seeder, Play or App Store builds, so those steps
-# are absent, and the numbering below matches the canonical order. The
+# Gradle app plus a native iPhone app (ios/), with no desktop, seeder or Play
+# builds, so those steps are absent, and the numbering below matches the
+# canonical order. The
 # version comes from the tag (passed to Gradle as APP_VERSION), so there are
 # no version files to bump and nothing is committed to main.
 #
@@ -17,6 +18,9 @@
 #   KEY_ALIAS           key alias (default weatherglass)
 #   KEY_PASSWORD        key password (default: the keystore password)
 #   SIGN_WITH           Nostr signer for zsp and the announcement
+#   ASC_KEY_ID, ASC_ISSUER_ID, ASC_PRIVATE_KEY_PATH
+#                       App Store Connect API key, for the App Store step
+#                       (the app's ID, ASC_APP_ID, is in app.conf)
 # Shared steps come from ../peerloom-release/release-lib.sh.
 set -euo pipefail
 
@@ -68,7 +72,7 @@ fi
 # A7: destinations.
 PUBLISH_GITHUB=true; PUBLISH_ZAPSTORE=true; PUBLISH_NOSTR=true
 PUBLISH_PLAY=false; PUBLISH_APP_STORE=false; PUBLISH_DESKTOP=false; PUBLISH_LINUX=false
-PUBLISH_FAILED=false; GITHUB_FAILED=false; ZAPSTORE_FAILED=false; ZAPSTORE_ONLY=false
+PUBLISH_FAILED=false; GITHUB_FAILED=false; ZAPSTORE_FAILED=false; ZAPSTORE_ONLY=false; APP_STORE_FAILED=false
 ask() {
   local r
   read -rp "    $1 [Y/n] " r
@@ -77,6 +81,11 @@ ask() {
 echo "==> $APP_NAME $RELEASE_TAG (version code $APP_VERSION_CODE)"
 ask "Publish to GitHub?" || PUBLISH_GITHUB=false
 ask "Publish to Zapstore?" || PUBLISH_ZAPSTORE=false
+if _appstore_configured; then
+  ask "Send the iPhone app to the App Store?" && PUBLISH_APP_STORE=true
+else
+  echo "    App Store: not set up (needs the ASC_* keys and the Mac Mini), skipping."
+fi
 ask "Post a Nostr announcement?" || PUBLISH_NOSTR=false
 _confirm "Release tag will be $RELEASE_TAG - proceed with build?"
 
@@ -126,6 +135,89 @@ fi
 # 8-9: Zapstore.
 release_install_zsp
 release_publish_zapstore "$REPO_ROOT/$APK_NAME" "$REPO_ROOT/release_notes.md"
+
+# 11: App Store. ios/testflight.sh builds on the Mac Mini and uploads; the
+# rest runs here with asc: the version record, What's New, the build and the
+# review submission. A failure here never stops the Nostr post.
+if $PUBLISH_APP_STORE; then
+  echo ""
+  echo "==> App Store: building and uploading the iPhone app..."
+  release_check_mac_space "${MAC_MINI_HOST:-Tims-Mac-mini.local}"
+  IOS_LOG=$(mktemp)
+  if ios/testflight.sh "$APP_VERSION" 2>&1 | tee "$IOS_LOG"; then
+    IOS_BUILD=$(sed -n -E 's/^Version .*, build ([0-9]+)$/\1/p' "$IOS_LOG" | head -1)
+  else
+    echo "    ERROR: the iPhone build or upload failed (see above)."
+    PUBLISH_FAILED=true; APP_STORE_FAILED=true
+  fi
+  rm -f "$IOS_LOG"
+fi
+if $PUBLISH_APP_STORE && ! $APP_STORE_FAILED; then
+  if ! _asc_auth_linux; then
+    echo "    ERROR: asc could not log in. The build is uploaded; submit it in App Store Connect."
+    PUBLISH_FAILED=true; APP_STORE_FAILED=true
+  else
+    # One open version at a time: use this version's record, rename an unsent
+    # one, create one, or stop if Apple is still reviewing an earlier version.
+    IOS_VID=$(_asc_version_id "$APP_VERSION")
+    if [ -z "$IOS_VID" ]; then
+      read -r OPEN_ID OPEN_VER OPEN_STATE < <(asc versions list --app "$ASC_APP_ID" --output json 2>/dev/null | python3 -c "
+import json, sys
+for v in json.load(sys.stdin).get('data', []):
+    a = v['attributes']
+    if a['appStoreState'] not in ('READY_FOR_SALE', 'REMOVED_FROM_SALE', 'DEVELOPER_REMOVED_FROM_SALE', 'REPLACED_WITH_NEW_VERSION'):
+        print(v['id'], a['versionString'], a['appStoreState']); break
+") || true
+      case "${OPEN_STATE:-}" in
+        PREPARE_FOR_SUBMISSION|DEVELOPER_REJECTED|REJECTED|METADATA_REJECTED|INVALID_BINARY)
+          _confirm "Rename the unsent App Store version $OPEN_VER to $APP_VERSION?"
+          asc versions update --version-id "$OPEN_ID" --version "$APP_VERSION" >/dev/null && IOS_VID="$OPEN_ID" ;;
+        "")
+          PRIOR=$(_appstore_latest_version)
+          asc versions create --app "$ASC_APP_ID" --version "$APP_VERSION" ${PRIOR:+--copy-metadata-from "$PRIOR"} >/dev/null || true
+          IOS_VID=$(_asc_version_id "$APP_VERSION") ;;
+        *)
+          echo "    Version $OPEN_VER is $OPEN_STATE, so $APP_VERSION cannot be submitted yet."
+          echo "    Build $IOS_BUILD is uploaded and in TestFlight. Submit it once $OPEN_VER is out of review." ;;
+      esac
+    fi
+    if [ -n "$IOS_VID" ]; then
+      # What's New: the release notes as plain text (not for the first version).
+      if [ "$(_appstore_latest_version)" != "" ] && [ "$APP_VERSION" != "1.0.0" ]; then
+        META=$(mktemp -d)
+        mkdir -p "$META/version/$APP_VERSION"
+        python3 - "$REPO_ROOT/release_notes.md" "$META/version/$APP_VERSION/en-US.json" <<'PY'
+import json, re, sys
+text = open(sys.argv[1]).read()
+text = re.sub(r'^#+\s*', '', text, flags=re.M)
+text = re.sub(r'\*\*|__|`', '', text)
+text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text).strip()
+json.dump({'whatsNew': text[:4000]}, open(sys.argv[2], 'w'))
+PY
+        asc metadata push --app "$ASC_APP_ID" --version "$APP_VERSION" --platform IOS --dir "$META" >/dev/null \
+          && echo "    Set What's New from the release notes." \
+          || echo "    WARNING: could not set What's New; add it in App Store Connect."
+        rm -rf "$META"
+      fi
+      BUILD_INFO=$(_asc_wait_for_build "$APP_VERSION" "${IOS_BUILD:-}")
+      BUILD_ID="${BUILD_INFO%% *}"
+      if [ -z "$BUILD_ID" ] || [[ "$BUILD_INFO" != *VALID* ]]; then
+        echo "    Build ${IOS_BUILD:-?} is not processed yet (${BUILD_INFO:-not found}). Attach and submit it in App Store Connect."
+        PUBLISH_FAILED=true; APP_STORE_FAILED=true
+      elif _asc_attach_build "$IOS_VID" "$BUILD_ID"; then
+        asc builds update --build-id "$BUILD_ID" --uses-non-exempt-encryption=false >/dev/null 2>&1 || true
+        [ -n "${TESTFLIGHT_GROUP:-}" ] && asc builds add-groups --build-id "$BUILD_ID" --group "$TESTFLIGHT_GROUP" >/dev/null 2>&1 || true
+        if ask "Submit $APP_VERSION (build ${IOS_BUILD:-?}) for App Store review?"; then
+          release_submit_for_review "$IOS_VID" || true
+        else
+          echo "    Not submitted. The build is attached; submit $APP_VERSION in App Store Connect when ready."
+        fi
+      else
+        PUBLISH_FAILED=true; APP_STORE_FAILED=true
+      fi
+    fi
+  fi
+fi
 
 # 12: Nostr announcement.
 release_post_nostr "$REPO_ROOT/release_notes.md"
